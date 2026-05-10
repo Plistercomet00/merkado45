@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
 import {
   CATEGORIAS,
   supabase,
+  whatsappGeneralLink,
   type Produto,
 } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -54,101 +55,217 @@ function Index() {
     });
   }, [produtos, categoria, busca]);
 
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const categoryCards = [
+    { nome: "Naturais", titulo: "Produtos Naturais", bg: "bg-secondary", Icon: Leaf },
+    { nome: "Frigorífico", titulo: "Frigorífico", bg: "bg-brand-meat", Icon: Beef },
+    { nome: "Suplementos", titulo: "Suplementos", bg: "bg-brand-supp", Icon: Pill },
+  ] as const;
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
-          <Link to="/">
-            <Logo size="md" />
+    <div className="min-h-screen bg-background text-foreground">
+      {/* HEADER fixo compacto */}
+      <header className="sticky top-0 z-40 h-14 border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto max-w-3xl h-full px-4 flex items-center justify-between">
+          <Link to="/" aria-label="Início">
+            <Logo size="sm" />
           </Link>
+          <a
+            href={whatsappGeneralLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold shadow-sm active:scale-95 transition-transform"
+          >
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
+          </a>
         </div>
-        <div className="mx-auto max-w-3xl px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <input
-              type="search"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar produto…"
-              className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        </div>
-        <nav className="overflow-x-auto no-scrollbar">
-          <ul className="mx-auto max-w-3xl flex gap-2 px-4 pb-3 w-max">
-            {(["Todos", ...CATEGORIAS] as const).map((c) => (
-              <li key={c}>
-                <button
-                  onClick={() => setCategoria(c)}
-                  className={`min-h-12 px-4 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${
-                    categoria === c
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                  }`}
-                >
-                  {c}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-4">
-        <h1 className="sr-only">Vitrine Merkado empório 45</h1>
+      {/* HERO */}
+      <section className="mx-auto max-w-3xl px-4 pt-8 pb-10 text-center">
+        <Logo size="lg" />
+        <h1 className="mt-6 text-3xl font-extrabold leading-tight text-foreground">
+          Qualidade que você sente.
+          <br />
+          <span className="text-secondary">Sabor que você lembra.</span>
+        </h1>
+        <p className="mt-3 text-base text-muted-foreground">
+          Produtos selecionados, frescos e com atendimento de quem entende.
+        </p>
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            onClick={() => scrollTo("vitrine")}
+            className="min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
+          >
+            Explorar produtos
+          </button>
+          <a
+            href={whatsappGeneralLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-secondary text-secondary text-base font-bold active:scale-[0.98] transition-transform"
+          >
+            <MessageCircle className="h-5 w-5" />
+            Pedir pelo WhatsApp
+          </a>
+        </div>
+      </section>
+
+      {/* CATEGORIAS */}
+      <section className="mx-auto max-w-3xl px-4 pb-10">
+        <h2 className="text-xl font-bold mb-4">Categorias</h2>
+        <div className="grid grid-cols-1 gap-3">
+          {categoryCards.map(({ nome, titulo, bg, Icon }) => (
+            <button
+              key={nome}
+              onClick={() => {
+                setCategoria(nome);
+                setTimeout(() => scrollTo("vitrine"), 30);
+              }}
+              className={`${bg} text-white rounded-2xl p-5 min-h-[88px] flex items-center justify-between text-left shadow-md active:scale-[0.98] transition-transform`}
+            >
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
+                  Categoria
+                </p>
+                <p className="text-lg font-extrabold mt-0.5">{titulo}</p>
+              </div>
+              <Icon className="h-10 w-10 opacity-90" />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* VITRINE */}
+      <section id="vitrine" className="mx-auto max-w-3xl px-4 pb-12 scroll-mt-16">
+        <h2 className="text-xl font-bold mb-3">Nossos produtos</h2>
+
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <input
+            type="search"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar produto…"
+            className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(["Todos", ...CATEGORIAS] as const).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategoria(c)}
+              className={`min-h-12 px-5 rounded-full text-base font-semibold transition-colors ${
+                categoria === c
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-foreground border border-border hover:border-primary/40"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <p className="text-center text-muted-foreground py-12">Carregando produtos…</p>
         ) : filtrados.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 rounded-2xl bg-card border border-border">
             <p className="text-muted-foreground">Nenhum produto encontrado.</p>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ul className="grid grid-cols-1 gap-3">
             {filtrados.map((p) => (
-              <li key={p.id}>
+              <li
+                key={p.id}
+                className="rounded-2xl bg-card border border-border p-4 shadow-sm"
+              >
+                <span className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground">
+                  {p.categoria}
+                </span>
+                <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
+                {p.descricao && (
+                  <p className="mt-1 text-base text-muted-foreground line-clamp-2">
+                    {p.descricao}
+                  </p>
+                )}
                 <Link
                   to="/produto/$id"
                   params={{ id: p.id }}
-                  className="flex gap-3 p-3 rounded-2xl bg-card border border-border hover:border-primary/40 transition-colors"
+                  className="mt-3 inline-flex items-center justify-center min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-24 h-24 flex-shrink-0 rounded-xl bg-muted overflow-hidden">
-                    {p.imagem_url ? (
-                      <img
-                        src={p.imagem_url}
-                        alt={p.nome}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                        Sem foto
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col justify-between min-w-0 flex-1">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{p.categoria}</p>
-                      <h2 className="text-base font-semibold text-foreground line-clamp-2">
-                        {p.nome}
-                      </h2>
-                    </div>
-                    <p className="text-lg font-bold text-primary">
-                      R$ {Number(p.preco).toFixed(2).replace(".", ",")}
-                    </p>
-                  </div>
+                  Ver detalhes
                 </Link>
               </li>
             ))}
           </ul>
         )}
-      </main>
+      </section>
 
-      <footer className="mx-auto max-w-3xl px-4 py-8 text-center text-sm text-muted-foreground">
-        <Logo size="sm" />
-        <p className="mt-2">Pedidos pelo WhatsApp</p>
+      {/* DIFERENCIAIS */}
+      <section className="bg-secondary text-secondary-foreground py-10">
+        <div className="mx-auto max-w-3xl px-4">
+          <h2 className="text-xl font-bold text-center mb-6">Por que escolher</h2>
+          <ul className="grid grid-cols-1 gap-5">
+            {[
+              { Icon: Sparkles, title: "Seleção cuidadosa", desc: "Cada item é escolhido a dedo pensando em você." },
+              { Icon: ShieldCheck, title: "Produtos frescos", desc: "Frescor e qualidade do começo ao fim da prateleira." },
+              { Icon: HeartHandshake, title: "Atendimento especializado", desc: "Equipe pronta para te orientar pelo WhatsApp." },
+            ].map(({ Icon, title, desc }) => (
+              <li key={title} className="flex gap-4 items-start">
+                <div className="h-12 w-12 flex-shrink-0 rounded-full bg-white/15 flex items-center justify-center">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold">{title}</p>
+                  <p className="text-base opacity-90 mt-0.5">{desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* RODAPÉ */}
+      <footer className="bg-accent text-accent-foreground py-10">
+        <div className="mx-auto max-w-3xl px-4 flex flex-col items-center text-center gap-4">
+          <Logo size="md" />
+          <div className="flex items-start gap-2 text-base">
+            <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <p>Rua Exemplo, 45 — Bairro, Cidade/UF</p>
+          </div>
+          <div className="flex items-start gap-2 text-base">
+            <Clock className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <p>Seg a Sáb · 08h às 19h</p>
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="h-12 w-12 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <Instagram className="h-6 w-6" />
+            </a>
+            <a
+              href={whatsappGeneralLink()}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp"
+              className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <MessageCircle className="h-6 w-6" />
+            </a>
+          </div>
+          <p className="text-xs opacity-70 mt-4">
+            © {new Date().getFullYear()} Merkado empório 45
+          </p>
+        </div>
       </footer>
-
-      <style>{`.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}</style>
     </div>
   );
 }

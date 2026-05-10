@@ -14,8 +14,8 @@ export function Logo({ size = "md" }: { size?: Size }) {
         Merkado
       </span>
       <span
-        className={`${s.emporio} italic font-serif text-accent-foreground/80`}
-        style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+        className={`${s.emporio} italic text-secondary`}
+        style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive" }}
       >
         empório
       </span>
