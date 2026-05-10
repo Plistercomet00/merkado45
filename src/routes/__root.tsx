@@ -72,11 +72,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Merkado empório 45 — Vitrine de produtos" },
+      {
+        name: "description",
+        content:
+          "Vitrine de produtos do Merkado empório 45. Confira preços e peça pelo WhatsApp.",
+      },
+      { property: "og:title", content: "Merkado empório 45" },
+      {
+        property: "og:description",
+        content: "Vitrine de produtos com pedidos pelo WhatsApp.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
