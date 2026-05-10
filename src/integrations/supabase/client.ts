@@ -16,13 +16,9 @@ export type Produto = {
 };
 
 export const CATEGORIAS = [
-  "Bebidas",
-  "Mercearia",
-  "Hortifruti",
-  "Padaria",
-  "Laticínios",
-  "Limpeza",
-  "Outros",
+  "Naturais",
+  "Frigorífico",
+  "Suplementos",
 ] as const;
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -35,9 +31,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 export const WHATSAPP_NUMBER = "5581984881580";
 
-export function whatsappLinkForProduct(nome: string, preco: number) {
-  const msg = `Olá! Tenho interesse no produto: *${nome}* (R$ ${preco
-    .toFixed(2)
-    .replace(".", ",")}). Está disponível?`;
+export function whatsappLinkForProduct(nome: string, _preco?: number) {
+  const msg = `Olá! Estou vindo do site e gostaria de saber mais informações sobre: ${nome}`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+export function whatsappGeneralLink() {
+  const msg = `Olá! Estou vindo do site Merkado empório 45 e gostaria de fazer um pedido.`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
