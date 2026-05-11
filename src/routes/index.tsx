@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake, ArrowDown } from "lucide-react";
+import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
 import {
   CATEGORIAS,
   supabase,
