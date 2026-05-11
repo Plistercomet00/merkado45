@@ -161,7 +161,7 @@ function ProdutoDetalhe() {
             className="inline-flex items-center justify-center gap-2 min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
           >
             <FaWhatsapp className="h-5 w-5" />
-            Pedir pelo WhatsApp
+            Fale Conosco!
           </a>
           <button
             onClick={() => navigate({ to: "/" })}
