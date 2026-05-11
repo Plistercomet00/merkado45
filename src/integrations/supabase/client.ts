@@ -1,26 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
-
 const SUPABASE_URL = "https://penquqyosjfiosowovye.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlbnF1cXlvc2pmaW9zb3dvdnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDM3NTMsImV4cCI6MjA5NDAxOTc1M30.myTUuUTA-2EJQtZRt9YXkWyX0QhwvlDU_04uAV1JSxs";
-
 export type Produto = {
   id: string;
   nome: string;
   descricao: string | null;
-  preco: number;
+  preco_100g: number | null;
+  preco_kg: number | null;
   categoria: string;
   imagem_url: string | null;
   disponivel: boolean;
   created_at: string;
 };
-
-export const CATEGORIAS = [
-  "Naturais",
-  "Frigorífico",
-  "Suplementos",
-] as const;
-
+export const CATEGORIAS = ["Naturais", "Frigorífico", "Suplementos"] as const;
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
@@ -28,14 +21,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: typeof window !== "undefined" ? window.localStorage : undefined,
   },
 });
-
 export const WHATSAPP_NUMBER = "5581984881580";
-
-export function whatsappLinkForProduct(nome: string, _preco?: number) {
+export function whatsappLinkForProduct(nome: string) {
   const msg = `Olá! Estou vindo do site e gostaria de saber mais informações sobre: ${nome}`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
-
 export function whatsappGeneralLink() {
   const msg = `Olá! Estou vindo do site Merkado empório 45 e gostaria de fazer um pedido.`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
