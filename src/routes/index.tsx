@@ -87,15 +87,6 @@ function Index() {
       {/* HERO */}
       <section className="mx-auto max-w-3xl px-4 pt-8 pb-10 text-center">
         <Logo size="lg" />
-        <div className="mt-8">
-          <button
-            onClick={() => scrollTo("vitrine")}
-            className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
-          >
-            Ver catálogo
-            <ArrowDown className="h-5 w-5" />
-          </button>
-        </div>
       </section>
 
       {/* CATEGORIAS */}
@@ -113,7 +104,7 @@ function Index() {
             >
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
-                  Categoria
+                  Nossas especialidades
                 </p>
                 <p className="text-lg font-extrabold mt-0.5">{titulo}</p>
               </div>
