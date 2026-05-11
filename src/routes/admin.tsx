@@ -95,21 +95,25 @@ type FormState = {
   id?: string;
   nome: string;
   descricao: string;
-  preco_100g: string;
-  preco_kg: string;
   categoria: string;
   imagem_url: string;
   disponivel: boolean;
+  preco_100g: string;
+  preco_kg: string;
+  preco_unidade: string;
+  peso_embalagem: string;
 };
 
 const FORM_VAZIO: FormState = {
   nome: "",
   descricao: "",
-  preco_100g: "",
-  preco_kg: "",
   categoria: CATEGORIAS[0],
   imagem_url: "",
   disponivel: true,
+  preco_100g: "",
+  preco_kg: "",
+  preco_unidade: "",
+  peso_embalagem: "",
 };
 
 function Painel({ email }: { email: string }) {
@@ -139,15 +143,28 @@ function Painel({ email }: { email: string }) {
   }, [produtos, categoria, busca]);
 
   async function salvar(form: FormState) {
-    const payload = {
+    const payload: Record<string, unknown> = {
       nome: form.nome,
       descricao: form.descricao || null,
-      preco_100g: form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null,
-      preco_kg: form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null,
       categoria: form.categoria,
       imagem_url: form.imagem_url || null,
       disponivel: form.disponivel,
+      preco_100g: null,
+      preco_kg: null,
+      preco_unidade: null,
+      peso_embalagem: null,
     };
+
+    if (form.categoria === "Naturais") {
+      payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
+      payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
+    } else if (form.categoria === "Frigorífico") {
+      payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
+    } else if (form.categoria === "Suplementos") {
+      payload.peso_embalagem = form.peso_embalagem || null;
+      payload.preco_unidade = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
+    }
+
     if (form.id) {
       await supabase.from("produtos").update(payload).eq("id", form.id);
     } else {
@@ -161,6 +178,25 @@ function Painel({ email }: { email: string }) {
     if (!confirm("Excluir este produto?")) return;
     await supabase.from("produtos").delete().eq("id", id);
     carregar();
+  }
+
+  function precoLabel(p: Produto) {
+    if (p.categoria === "Naturais") {
+      const parts = [];
+      if (p.preco_100g != null) parts.push(`100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")}`);
+      if (p.preco_kg != null) parts.push(`1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`);
+      return parts.join(" · ");
+    }
+    if (p.categoria === "Frigorífico") {
+      return p.preco_kg != null ? `1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}` : "";
+    }
+    if (p.categoria === "Suplementos") {
+      const parts = [];
+      if (p.peso_embalagem) parts.push(p.peso_embalagem);
+      if (p.preco_unidade != null) parts.push(`R$ ${Number(p.preco_unidade).toFixed(2).replace(".", ",")}`);
+      return parts.join(" · ");
+    }
+    return "";
   }
 
   return (
@@ -181,7 +217,6 @@ function Painel({ email }: { email: string }) {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-4">
-        {/* BUSCA */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <input
@@ -193,7 +228,6 @@ function Painel({ email }: { email: string }) {
           />
         </div>
 
-        {/* FILTROS */}
         <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
@@ -216,7 +250,6 @@ function Painel({ email }: { email: string }) {
           ))}
         </div>
 
-        {/* CONTAGEM */}
         <p className="text-xs text-muted-foreground mb-3">
           {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""} encontrado{filtrados.length !== 1 ? "s" : ""}
         </p>
@@ -246,8 +279,7 @@ function Painel({ email }: { email: string }) {
                     >
                       {p.categoria}
                     </span>
-                    {p.preco_100g != null && `100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")} `}
-                    {p.preco_kg != null && `· 1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`}
+                    {precoLabel(p)}
                     {!p.disponivel && " · oculto"}
                   </p>
                 </div>
@@ -257,11 +289,13 @@ function Painel({ email }: { email: string }) {
                       id: p.id,
                       nome: p.nome,
                       descricao: p.descricao ?? "",
-                      preco_100g: p.preco_100g != null ? String(p.preco_100g) : "",
-                      preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
                       categoria: p.categoria,
                       imagem_url: p.imagem_url ?? "",
                       disponivel: p.disponivel,
+                      preco_100g: p.preco_100g != null ? String(p.preco_100g) : "",
+                      preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
+                      preco_unidade: p.preco_unidade != null ? String(p.preco_unidade) : "",
+                      peso_embalagem: p.peso_embalagem ?? "",
                     })
                   }
                   className="min-h-12 min-w-12 flex items-center justify-center rounded-full hover:bg-secondary"
@@ -344,7 +378,7 @@ function FormModal({
         <select
           value={form.categoria}
           onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-          className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+          className="w-full h-12 px-3 mb-4 rounded-lg border border-input bg-background text-base"
         >
           {CATEGORIAS.map((c) => (
             <option key={c} value={c}>
@@ -353,23 +387,61 @@ function FormModal({
           ))}
         </select>
 
-        <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
-        <input
-          inputMode="decimal"
-          placeholder="0,00"
-          value={form.preco_100g}
-          onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
-          className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
-        />
+        {/* CAMPOS DINÂMICOS POR CATEGORIA */}
 
-        <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
-        <input
-          inputMode="decimal"
-          placeholder="0,00"
-          value={form.preco_kg}
-          onChange={(e) => setForm({ ...form, preco_kg: e.target.value })}
-          className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
-        />
+        {form.categoria === "Naturais" && (
+          <>
+            <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
+            <input
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.preco_100g}
+              onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+            <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
+            <input
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.preco_kg}
+              onChange={(e) => setForm({ ...form, preco_kg: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+          </>
+        )}
+
+        {form.categoria === "Frigorífico" && (
+          <>
+            <label className="block text-sm font-medium mb-1">Preço por kg (R$)</label>
+            <input
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.preco_kg}
+              onChange={(e) => setForm({ ...form, preco_kg: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+          </>
+        )}
+
+        {form.categoria === "Suplementos" && (
+          <>
+            <label className="block text-sm font-medium mb-1">Peso da embalagem</label>
+            <input
+              placeholder="ex: 900g, 2kg, 60 cápsulas"
+              value={form.peso_embalagem}
+              onChange={(e) => setForm({ ...form, peso_embalagem: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+            <label className="block text-sm font-medium mb-1">Preço por unidade (R$)</label>
+            <input
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.preco_unidade}
+              onChange={(e) => setForm({ ...form, preco_unidade: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+          </>
+        )}
 
         <label className="block text-sm font-medium mb-1">URL da imagem</label>
         <input
