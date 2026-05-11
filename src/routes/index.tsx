@@ -13,13 +13,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import {
-  CATEGORIAS,
-  supabase,
-  whatsappGeneralLink,
-  whatsappLinkForProduct,
-  type Produto,
-} from "@/integrations/supabase/client";
+import { CATEGORIAS, supabase, whatsappGeneralLink, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
@@ -35,7 +29,7 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-function PrecosProduto({ p }: { p: Produto }) {
+function PrecoResumido({ p }: { p: Produto }) {
   if (p.categoria === "Naturais") {
     if (p.preco_100g == null && p.preco_kg == null) return null;
     return (
@@ -132,7 +126,7 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* HEADER fixo compacto */}
+      {/* HEADER */}
       <header className="sticky top-0 z-40 h-14 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-3xl h-full px-4 flex items-center justify-between">
           <Link to="/" aria-label="Início">
@@ -217,35 +211,32 @@ function Index() {
         ) : (
           <ul className="grid grid-cols-1 gap-3">
             {filtrados.map((p) => (
-              <li key={p.id} className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-                {p.imagem_url && (
-                  <img src={p.imagem_url} alt={p.nome} className="w-full h-48 object-cover rounded-xl mb-3" />
-                )}
-                <span
-                  className={`inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                    p.categoria === "Naturais"
-                      ? "bg-[#2d7a1f] text-white"
-                      : p.categoria === "Frigorífico"
-                        ? "bg-[#c1393b] text-white"
-                        : p.categoria === "Suplementos"
-                          ? "bg-[#e8a020] text-white"
-                          : "bg-secondary text-secondary-foreground"
-                  }`}
+              <li key={p.id}>
+                <Link
+                  to="/produto/$id"
+                  params={{ id: p.id }}
+                  className="block rounded-2xl bg-card border border-border p-4 shadow-sm active:scale-[0.99] transition-transform"
                 >
-                  {p.categoria}
-                </span>
-                <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
-                {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
-                <PrecosProduto p={p} />
-                <a
-                  href={whatsappLinkForProduct(p.nome)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center justify-center gap-2 min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold active:scale-[0.98] transition-transform"
-                >
-                  <FaWhatsapp className="h-5 w-5" />
-                  Pedir pelo WhatsApp
-                </a>
+                  {p.imagem_url && (
+                    <img src={p.imagem_url} alt={p.nome} className="w-full h-48 object-cover rounded-xl mb-3" />
+                  )}
+                  <span
+                    className={`inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                      p.categoria === "Naturais"
+                        ? "bg-[#2d7a1f] text-white"
+                        : p.categoria === "Frigorífico"
+                          ? "bg-[#c1393b] text-white"
+                          : p.categoria === "Suplementos"
+                            ? "bg-[#e8a020] text-white"
+                            : "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    {p.categoria}
+                  </span>
+                  <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
+                  {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
+                  <PrecoResumido p={p} />
+                </Link>
               </li>
             ))}
           </ul>
