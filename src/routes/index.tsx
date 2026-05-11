@@ -1,13 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa";
 import {
-  CATEGORIAS,
-  supabase,
-  whatsappGeneralLink,
-  type Produto,
-} from "@/integrations/supabase/client";
+  Search,
+  Instagram,
+  MapPin,
+  Clock,
+  Leaf,
+  Beef,
+  Pill,
+  Sparkles,
+  ShieldCheck,
+  HeartHandshake,
+} from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+import { CATEGORIAS, supabase, whatsappGeneralLink, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
@@ -17,8 +23,7 @@ export const Route = createFileRoute("/")({
       { title: "Merkado empório 45 — Vitrine" },
       {
         name: "description",
-        content:
-          "Veja os produtos do Merkado empório 45 e peça pelo WhatsApp.",
+        content: "Veja os produtos do Merkado empório 45 e peça pelo WhatsApp.",
       },
     ],
   }),
@@ -50,14 +55,12 @@ function Index() {
   const filtrados = useMemo(() => {
     return produtos.filter((p) => {
       const okCat = categoria === "Todos" || p.categoria === categoria;
-      const okBusca =
-        !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
+      const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
       return okCat && okBusca;
     });
   }, [produtos, categoria, busca]);
 
-  const scrollTo = (id: string) =>
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const categoryCards = [
     { nome: "Naturais", titulo: "Produtos Naturais", bg: "bg-secondary", Icon: Leaf },
@@ -146,19 +149,12 @@ function Index() {
         ) : (
           <ul className="grid grid-cols-1 gap-3">
             {filtrados.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-2xl bg-card border border-border p-4 shadow-sm"
-              >
+              <li key={p.id} className="rounded-2xl bg-card border border-border p-4 shadow-sm">
                 <span className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground">
                   {p.categoria}
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
-                {p.descricao && (
-                  <p className="mt-1 text-base text-muted-foreground line-clamp-2">
-                    {p.descricao}
-                  </p>
-                )}
+                {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
                 <Link
                   to="/produto/$id"
                   params={{ id: p.id }}
@@ -179,13 +175,18 @@ function Index() {
           <ul className="grid grid-cols-3 gap-3">
             {[
               { Icon: Sparkles, title: "Seleção cuidadosa", desc: "Cada item é escolhido a dedo pensando em você." },
-              { Icon: ShieldCheck, title: "Produtos frescos", desc: "Frescor e qualidade do começo ao fim da prateleira." },
-              { Icon: HeartHandshake, title: "Atendimento especializado", desc: "Equipe pronta para te orientar pelo WhatsApp." },
+              {
+                Icon: ShieldCheck,
+                title: "Produtos frescos",
+                desc: "Frescor e qualidade do começo ao fim da prateleira.",
+              },
+              {
+                Icon: HeartHandshake,
+                title: "Atendimento especializado",
+                desc: "Equipe pronta para te orientar pelo WhatsApp.",
+              },
             ].map(({ Icon, title, desc }) => (
-              <li
-                key={title}
-                className="flex flex-col items-center text-center gap-2 rounded-2xl bg-white/10 p-4"
-              >
+              <li key={title} className="flex flex-col items-center text-center gap-2 rounded-2xl bg-white/10 p-4">
                 <div className="h-12 w-12 rounded-full bg-white/15 flex items-center justify-center">
                   <Icon className="h-6 w-6" />
                 </div>
@@ -212,7 +213,7 @@ function Index() {
           </div>
           <div className="flex items-center gap-3 mt-2">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/merkado45.emporio/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -231,9 +232,7 @@ function Index() {
             </a>
           </div>
           <div className="h-px w-16 bg-white/20 mt-2" />
-          <p className="text-xs opacity-70">
-            © {new Date().getFullYear()} Merkado empório 45
-          </p>
+          <p className="text-xs opacity-70">© {new Date().getFullYear()} Merkado empório 45</p>
         </div>
       </footer>
     </div>
