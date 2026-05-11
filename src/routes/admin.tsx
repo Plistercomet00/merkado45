@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { LogOut, Plus, Pencil, Trash2, X } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { LogOut, Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
@@ -116,6 +116,8 @@ function Painel({ email }: { email: string }) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState<FormState | null>(null);
+  const [busca, setBusca] = useState("");
+  const [categoria, setCategoria] = useState<string>("Todos");
 
   async function carregar() {
     setLoading(true);
@@ -127,6 +129,14 @@ function Painel({ email }: { email: string }) {
   useEffect(() => {
     carregar();
   }, []);
+
+  const filtrados = useMemo(() => {
+    return produtos.filter((p) => {
+      const okCat = categoria === "Todos" || p.categoria === categoria;
+      const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
+      return okCat && okBusca;
+    });
+  }, [produtos, categoria, busca]);
 
   async function salvar(form: FormState) {
     const payload = {
@@ -171,15 +181,53 @@ function Painel({ email }: { email: string }) {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-4">
+        {/* BUSCA */}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <input
+            type="search"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar produto…"
+            className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        {/* FILTROS */}
+        <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
+          {(["Todos", ...CATEGORIAS] as const).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategoria(c)}
+              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${
+                categoria === c
+                  ? c === "Naturais"
+                    ? "bg-[#2d7a1f] text-white"
+                    : c === "Frigorífico"
+                      ? "bg-[#c1393b] text-white"
+                      : c === "Suplementos"
+                        ? "bg-[#e8a020] text-white"
+                        : "bg-primary text-primary-foreground"
+                  : "bg-card text-foreground border border-border"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        {/* CONTAGEM */}
+        <p className="text-xs text-muted-foreground mb-3">
+          {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""} encontrado{filtrados.length !== 1 ? "s" : ""}
+        </p>
+
         {loading ? (
           <p className="text-center text-muted-foreground py-12">Carregando…</p>
-        ) : produtos.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12">
-            Nenhum produto cadastrado. Toque em + para adicionar.
-          </p>
+        ) : filtrados.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado.</p>
         ) : (
           <ul className="space-y-2">
-            {produtos.map((p) => (
+            {filtrados.map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border">
                 <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden">
                   {p.imagem_url && <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />}
@@ -187,9 +235,19 @@ function Painel({ email }: { email: string }) {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{p.nome}</p>
                   <p className="text-xs text-muted-foreground">
-                    {p.categoria}
-                    {p.preco_100g != null && ` · 100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")}`}
-                    {p.preco_kg != null && ` · 1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`}
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${
+                        p.categoria === "Naturais"
+                          ? "bg-[#2d7a1f]"
+                          : p.categoria === "Frigorífico"
+                            ? "bg-[#c1393b]"
+                            : "bg-[#e8a020]"
+                      }`}
+                    >
+                      {p.categoria}
+                    </span>
+                    {p.preco_100g != null && `100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")} `}
+                    {p.preco_kg != null && `· 1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`}
                     {!p.disponivel && " · oculto"}
                   </p>
                 </div>
