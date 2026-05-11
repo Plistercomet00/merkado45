@@ -175,20 +175,21 @@ function Index() {
       <section className="bg-secondary text-secondary-foreground py-10">
         <div className="mx-auto max-w-3xl px-4">
           <h2 className="text-xl font-bold text-center mb-6">Por que escolher</h2>
-          <ul className="grid grid-cols-1 gap-5">
+          <ul className="grid grid-cols-3 gap-3">
             {[
               { Icon: Sparkles, title: "Seleção cuidadosa", desc: "Cada item é escolhido a dedo pensando em você." },
               { Icon: ShieldCheck, title: "Produtos frescos", desc: "Frescor e qualidade do começo ao fim da prateleira." },
               { Icon: HeartHandshake, title: "Atendimento especializado", desc: "Equipe pronta para te orientar pelo WhatsApp." },
             ].map(({ Icon, title, desc }) => (
-              <li key={title} className="flex gap-4 items-start">
-                <div className="h-12 w-12 flex-shrink-0 rounded-full bg-white/15 flex items-center justify-center">
+              <li
+                key={title}
+                className="flex flex-col items-center text-center gap-2 rounded-2xl bg-white/10 p-4"
+              >
+                <div className="h-12 w-12 rounded-full bg-white/15 flex items-center justify-center">
                   <Icon className="h-6 w-6" />
                 </div>
-                <div>
-                  <p className="text-lg font-bold">{title}</p>
-                  <p className="text-base opacity-90 mt-0.5">{desc}</p>
-                </div>
+                <p className="text-sm font-bold leading-tight">{title}</p>
+                <p className="text-xs opacity-90 leading-snug">{desc}</p>
               </li>
             ))}
           </ul>
@@ -196,16 +197,17 @@ function Index() {
       </section>
 
       {/* RODAPÉ */}
-      <footer className="bg-accent text-accent-foreground py-10">
-        <div className="mx-auto max-w-3xl px-4 flex flex-col items-center text-center gap-4">
-          <Logo size="md" />
+      <footer className="bg-accent text-accent-foreground">
+        <div className="mx-auto max-w-3xl px-6 py-12 flex flex-col items-center text-center gap-5">
+          <Logo size="md" variant="onDark" />
+          <div className="h-px w-16 bg-white/20" />
           <div className="flex items-start gap-2 text-base">
-            <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
-            <p>Rua Exemplo, 45 — Bairro, Cidade/UF</p>
+            <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 opacity-80" />
+            <p>Rua Taquaritinga, 45 — Casa Amarela, Recife/PE</p>
           </div>
           <div className="flex items-start gap-2 text-base">
-            <Clock className="h-5 w-5 mt-0.5 flex-shrink-0" />
-            <p>Seg a Sáb · 08h às 19h</p>
+            <Clock className="h-5 w-5 mt-0.5 flex-shrink-0 opacity-80" />
+            <p>Segunda a Sábado · 07h às 18h</p>
           </div>
           <div className="flex items-center gap-3 mt-2">
             <a
@@ -213,7 +215,7 @@ function Index() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="h-12 w-12 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform"
+              className="h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition-all"
             >
               <Instagram className="h-6 w-6" />
             </a>
@@ -227,7 +229,8 @@ function Index() {
               <MessageCircle className="h-6 w-6" />
             </a>
           </div>
-          <p className="text-xs opacity-70 mt-4">
+          <div className="h-px w-16 bg-white/20 mt-2" />
+          <p className="text-xs opacity-70">
             © {new Date().getFullYear()} Merkado empório 45
           </p>
         </div>
