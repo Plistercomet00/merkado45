@@ -166,9 +166,17 @@ function Painel({ email }: { email: string }) {
     }
 
     if (form.id) {
-      await supabase.from("produtos").update(payload).eq("id", form.id);
+      const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
+      if (error) {
+        alert("Erro ao salvar: " + error.message);
+        return;
+      }
     } else {
-      await supabase.from("produtos").insert(payload);
+      const { error } = await supabase.from("produtos").insert(payload);
+      if (error) {
+        alert("Erro ao salvar: " + error.message);
+        return;
+      }
     }
     setEditando(null);
     carregar();
@@ -340,9 +348,11 @@ function FormModal({
 }) {
   const [form, setForm] = useState<FormState>(initial);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setErro(null);
     setSalvando(true);
     await onSave(form);
     setSalvando(false);
@@ -366,6 +376,8 @@ function FormModal({
           </button>
         </div>
 
+        {erro && <div className="mb-3 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{erro}</div>}
+
         <label className="block text-sm font-medium mb-1">Nome</label>
         <input
           required
@@ -386,8 +398,6 @@ function FormModal({
             </option>
           ))}
         </select>
-
-        {/* CAMPOS DINÂMICOS POR CATEGORIA */}
 
         {form.categoria === "Naturais" && (
           <>
