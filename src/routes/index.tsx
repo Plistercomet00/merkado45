@@ -97,10 +97,7 @@ function Index() {
               className={`${bg} text-white rounded-2xl p-5 min-h-[88px] flex items-center justify-between text-left shadow-md active:scale-[0.98] transition-transform`}
             >
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
-                  Nossas especialidades
-                </p>
-                <p className="text-lg font-extrabold mt-0.5">{titulo}</p>
+                <p className="text-lg font-extrabold">{titulo}</p>
               </div>
               <Icon className="h-10 w-10 opacity-90" />
             </button>
