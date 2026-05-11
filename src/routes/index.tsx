@@ -13,7 +13,13 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { CATEGORIAS, supabase, whatsappGeneralLink, type Produto } from "@/integrations/supabase/client";
+import {
+  CATEGORIAS,
+  supabase,
+  whatsappGeneralLink,
+  whatsappLinkForProduct,
+  type Produto,
+} from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
@@ -124,15 +130,13 @@ function Index() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`min-h-12 px-5 rounded-full text-base font-semibold transition-colors ${
-                categoria === c
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-foreground border border-border hover:border-primary/40"
+              className={`flex-shrink-0 min-h-12 px-5 rounded-full text-base font-semibold transition-colors ${
+                categoria === c ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border"
               }`}
             >
               {c}
@@ -150,18 +154,27 @@ function Index() {
           <ul className="grid grid-cols-1 gap-3">
             {filtrados.map((p) => (
               <li key={p.id} className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+                {p.imagem_url && (
+                  <img src={p.imagem_url} alt={p.nome} className="w-full h-48 object-cover rounded-xl mb-3" />
+                )}
                 <span className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground">
                   {p.categoria}
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
                 {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
-                <Link
-                  to="/produto/$id"
-                  params={{ id: p.id }}
-                  className="mt-3 inline-flex items-center justify-center min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold active:scale-[0.98] transition-transform"
+                <div className="mt-2 flex gap-4 text-sm font-semibold text-foreground">
+                  {p.preco_100g != null && <span>100g · R$ {p.preco_100g.toFixed(2)}</span>}
+                  {p.preco_kg != null && <span>1kg · R$ {p.preco_kg.toFixed(2)}</span>}
+                </div>
+                <a
+                  href={whatsappLinkForProduct(p.nome)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center justify-center gap-2 min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold active:scale-[0.98] transition-transform"
                 >
-                  Ver detalhes
-                </Link>
+                  <FaWhatsapp className="h-5 w-5" />
+                  Pedir pelo WhatsApp
+                </a>
               </li>
             ))}
           </ul>
