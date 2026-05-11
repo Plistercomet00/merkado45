@@ -35,6 +35,62 @@ export const Route = createFileRoute("/")({
   }),
 });
 
+function PrecosProduto({ p }: { p: Produto }) {
+  if (p.categoria === "Naturais") {
+    if (p.preco_100g == null && p.preco_kg == null) return null;
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {p.preco_100g != null && (
+          <div className="rounded-xl bg-muted p-3 text-center">
+            <p className="text-xs text-muted-foreground mb-1">100g</p>
+            <p className="text-base font-bold text-foreground">R$ {p.preco_100g.toFixed(2).replace(".", ",")}</p>
+          </div>
+        )}
+        {p.preco_kg != null && (
+          <div className="rounded-xl bg-muted p-3 text-center">
+            <p className="text-xs text-muted-foreground mb-1">1kg</p>
+            <p className="text-base font-bold text-foreground">R$ {p.preco_kg.toFixed(2).replace(".", ",")}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (p.categoria === "Frigorífico") {
+    if (p.preco_kg == null) return null;
+    return (
+      <div className="mt-3">
+        <div className="rounded-xl bg-muted p-3 text-center">
+          <p className="text-xs text-muted-foreground mb-1">Preço por kg</p>
+          <p className="text-base font-bold text-foreground">R$ {p.preco_kg.toFixed(2).replace(".", ",")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (p.categoria === "Suplementos") {
+    if (p.preco_unidade == null && !p.peso_embalagem) return null;
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {p.peso_embalagem && (
+          <div className="rounded-xl bg-muted p-3 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Embalagem</p>
+            <p className="text-base font-bold text-foreground">{p.peso_embalagem}</p>
+          </div>
+        )}
+        {p.preco_unidade != null && (
+          <div className="rounded-xl bg-muted p-3 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Preço</p>
+            <p className="text-base font-bold text-foreground">R$ {p.preco_unidade.toFixed(2).replace(".", ",")}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function Index() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,26 +236,7 @@ function Index() {
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
                 {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
-                {(p.preco_100g != null || p.preco_kg != null) && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {p.preco_100g != null && (
-                      <div className="rounded-xl bg-muted p-3 text-center">
-                        <p className="text-xs text-muted-foreground mb-1">100g</p>
-                        <p className="text-base font-bold text-foreground">
-                          R$ {p.preco_100g.toFixed(2).replace(".", ",")}
-                        </p>
-                      </div>
-                    )}
-                    {p.preco_kg != null && (
-                      <div className="rounded-xl bg-muted p-3 text-center">
-                        <p className="text-xs text-muted-foreground mb-1">1kg</p>
-                        <p className="text-base font-bold text-foreground">
-                          R$ {p.preco_kg.toFixed(2).replace(".", ",")}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <PrecosProduto p={p} />
                 <a
                   href={whatsappLinkForProduct(p.nome)}
                   target="_blank"
