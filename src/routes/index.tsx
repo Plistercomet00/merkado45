@@ -171,7 +171,6 @@ function Index() {
       {/* DIFERENCIAIS */}
       <section className="bg-secondary text-secondary-foreground py-10">
         <div className="mx-auto max-w-3xl px-4">
-          <h2 className="text-xl font-bold text-center mb-6">Por que escolher</h2>
           <ul className="grid grid-cols-3 gap-3">
             {[
               { Icon: Sparkles, title: "Seleção cuidadosa", desc: "Cada item é escolhido a dedo pensando em você." },
