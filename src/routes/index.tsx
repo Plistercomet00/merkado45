@@ -157,7 +157,17 @@ function Index() {
                 {p.imagem_url && (
                   <img src={p.imagem_url} alt={p.nome} className="w-full h-48 object-cover rounded-xl mb-3" />
                 )}
-                <span className="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground">
+                <span
+                  className={`inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                    p.categoria === "Naturais"
+                      ? "bg-[#2d7a1f] text-white"
+                      : p.categoria === "Frigorífico"
+                        ? "bg-[#c1393b] text-white"
+                        : p.categoria === "Suplementos"
+                          ? "bg-[#e8a020] text-white"
+                          : "bg-secondary text-secondary-foreground"
+                  }`}
+                >
                   {p.categoria}
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
