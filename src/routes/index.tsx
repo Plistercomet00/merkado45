@@ -87,11 +87,6 @@ function Index() {
       {/* HERO */}
       <section className="mx-auto max-w-3xl px-4 pt-8 pb-10 text-center">
         <Logo size="lg" />
-        <h1 className="mt-6 text-3xl font-extrabold leading-tight text-foreground">
-          Qualidade que você sente.
-          <br />
-          <span className="text-secondary">Sabor que você lembra.</span>
-        </h1>
         <div className="mt-8">
           <button
             onClick={() => scrollTo("vitrine")}
