@@ -8,6 +8,8 @@ export type Produto = {
   descricao: string | null;
   preco_100g: number | null;
   preco_kg: number | null;
+  preco_unidade: number | null;
+  peso_embalagem: string | null;
   categoria: string;
   imagem_url: string | null;
   disponivel: boolean;
