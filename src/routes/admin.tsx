@@ -1,20 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { LogOut, Plus, Pencil, Trash2, X } from "lucide-react";
-import {
-  CATEGORIAS,
-  supabase,
-  type Produto,
-} from "@/integrations/supabase/client";
+import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
   head: () => ({
-    meta: [
-      { title: "Admin — Merkado empório 45" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Admin — Merkado empório 45" }, { name: "robots", content: "noindex, nofollow" }],
   }),
 });
 
@@ -64,10 +57,7 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
-      <form
-        onSubmit={entrar}
-        className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-sm"
-      >
+      <form onSubmit={entrar} className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="text-center mb-6">
           <Logo size="md" />
           <p className="text-sm text-muted-foreground mt-2">Painel administrativo</p>
@@ -105,7 +95,8 @@ type FormState = {
   id?: string;
   nome: string;
   descricao: string;
-  preco: string;
+  preco_100g: string;
+  preco_kg: string;
   categoria: string;
   imagem_url: string;
   disponivel: boolean;
@@ -114,7 +105,8 @@ type FormState = {
 const FORM_VAZIO: FormState = {
   nome: "",
   descricao: "",
-  preco: "",
+  preco_100g: "",
+  preco_kg: "",
   categoria: CATEGORIAS[0],
   imagem_url: "",
   disponivel: true,
@@ -127,10 +119,7 @@ function Painel({ email }: { email: string }) {
 
   async function carregar() {
     setLoading(true);
-    const { data } = await supabase
-      .from("produtos")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data } = await supabase.from("produtos").select("*").order("created_at", { ascending: false });
     setProdutos((data as Produto[]) ?? []);
     setLoading(false);
   }
@@ -143,7 +132,8 @@ function Painel({ email }: { email: string }) {
     const payload = {
       nome: form.nome,
       descricao: form.descricao || null,
-      preco: Number(form.preco.replace(",", ".")),
+      preco_100g: form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null,
+      preco_kg: form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null,
       categoria: form.categoria,
       imagem_url: form.imagem_url || null,
       disponivel: form.disponivel,
@@ -190,20 +180,17 @@ function Painel({ email }: { email: string }) {
         ) : (
           <ul className="space-y-2">
             {produtos.map((p) => (
-              <li
-                key={p.id}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border"
-              >
+              <li key={p.id} className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border">
                 <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden">
-                  {p.imagem_url && (
-                    <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />
-                  )}
+                  {p.imagem_url && <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{p.nome}</p>
                   <p className="text-xs text-muted-foreground">
-                    {p.categoria} · R$ {Number(p.preco).toFixed(2).replace(".", ",")}{" "}
-                    {!p.disponivel && "· oculto"}
+                    {p.categoria}
+                    {p.preco_100g != null && ` · 100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")}`}
+                    {p.preco_kg != null && ` · 1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`}
+                    {!p.disponivel && " · oculto"}
                   </p>
                 </div>
                 <button
@@ -212,7 +199,8 @@ function Painel({ email }: { email: string }) {
                       id: p.id,
                       nome: p.nome,
                       descricao: p.descricao ?? "",
-                      preco: String(p.preco),
+                      preco_100g: p.preco_100g != null ? String(p.preco_100g) : "",
+                      preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
                       categoria: p.categoria,
                       imagem_url: p.imagem_url ?? "",
                       disponivel: p.disponivel,
@@ -244,13 +232,7 @@ function Painel({ email }: { email: string }) {
         <Plus className="h-7 w-7" />
       </button>
 
-      {editando && (
-        <FormModal
-          initial={editando}
-          onClose={() => setEditando(null)}
-          onSave={salvar}
-        />
-      )}
+      {editando && <FormModal initial={editando} onClose={() => setEditando(null)} onSave={salvar} />}
     </div>
   );
 }
@@ -281,9 +263,7 @@ function FormModal({
         className="w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">
-            {form.id ? "Editar produto" : "Novo produto"}
-          </h2>
+          <h2 className="text-lg font-bold">{form.id ? "Editar produto" : "Novo produto"}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -315,13 +295,21 @@ function FormModal({
           ))}
         </select>
 
-        <label className="block text-sm font-medium mb-1">Preço (R$)</label>
+        <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
         <input
-          required
           inputMode="decimal"
           placeholder="0,00"
-          value={form.preco}
-          onChange={(e) => setForm({ ...form, preco: e.target.value })}
+          value={form.preco_100g}
+          onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
+          className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+        />
+
+        <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
+        <input
+          inputMode="decimal"
+          placeholder="0,00"
+          value={form.preco_kg}
+          onChange={(e) => setForm({ ...form, preco_kg: e.target.value })}
           className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
         />
 
