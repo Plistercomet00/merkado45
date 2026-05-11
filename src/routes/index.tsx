@@ -136,7 +136,15 @@ function Index() {
               key={c}
               onClick={() => setCategoria(c)}
               className={`flex-shrink-0 min-h-12 px-5 rounded-full text-base font-semibold transition-colors ${
-                categoria === c ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border"
+                categoria === c
+                  ? c === "Naturais"
+                    ? "bg-[#2d7a1f] text-white"
+                    : c === "Frigorífico"
+                      ? "bg-[#c1393b] text-white"
+                      : c === "Suplementos"
+                        ? "bg-[#e8a020] text-white"
+                        : "bg-primary text-primary-foreground"
+                  : "bg-card text-foreground border border-border"
               }`}
             >
               {c}
