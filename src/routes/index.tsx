@@ -84,14 +84,8 @@ function Index() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="mx-auto max-w-3xl px-4 pt-8 pb-10 text-center">
-        <Logo size="lg" />
-      </section>
-
       {/* CATEGORIAS */}
-      <section className="mx-auto max-w-3xl px-4 pb-10">
-        <h2 className="text-xl font-bold mb-4">Categorias</h2>
+      <section className="mx-auto max-w-3xl px-4 pt-6 pb-10">
         <div className="grid grid-cols-1 gap-3">
           {categoryCards.map(({ nome, titulo, bg, Icon }) => (
             <button
