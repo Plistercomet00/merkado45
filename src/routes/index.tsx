@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake, ArrowDown } from "lucide-react";
 import {
   CATEGORIAS,
   supabase,
@@ -92,25 +92,14 @@ function Index() {
           <br />
           <span className="text-secondary">Sabor que você lembra.</span>
         </h1>
-        <p className="mt-3 text-base text-muted-foreground">
-          Produtos selecionados, frescos e com atendimento de quem entende.
-        </p>
-        <div className="mt-6 flex flex-col gap-3">
+        <div className="mt-8">
           <button
             onClick={() => scrollTo("vitrine")}
-            className="min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
+            className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
           >
-            Explorar produtos
+            Ver catálogo
+            <ArrowDown className="h-5 w-5" />
           </button>
-          <a
-            href={whatsappGeneralLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-secondary text-secondary text-base font-bold active:scale-[0.98] transition-transform"
-          >
-            <MessageCircle className="h-5 w-5" />
-            Pedir pelo WhatsApp
-          </a>
         </div>
       </section>
 
