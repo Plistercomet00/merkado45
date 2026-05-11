@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import {
   supabase,
   whatsappLinkForProduct,
@@ -95,7 +96,7 @@ function ProdutoDetalhe() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 min-h-12 w-full rounded-full bg-primary text-primary-foreground text-base font-bold shadow-md active:scale-[0.98] transition-transform"
           >
-            <MessageCircle className="h-5 w-5" />
+            <FaWhatsapp className="h-5 w-5" />
             Perguntar pelo WhatsApp
           </a>
           <Link
