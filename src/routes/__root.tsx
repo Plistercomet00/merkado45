@@ -72,13 +72,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Merkado empório 45 — Vitrine de produtos" },
+      { title: "Merkado empório 45 - Produtos Naturais e Frigorífico" },
       {
         name: "description",
         content:
           "Vitrine de produtos do Merkado empório 45. Confira preços e peça pelo WhatsApp.",
       },
-      { property: "og:title", content: "Merkado empório 45" },
+      { property: "og:title", content: "Merkado empório 45 - Produtos Naturais e Frigorífico" },
       {
         property: "og:description",
         content: "Vitrine de produtos com pedidos pelo WhatsApp.",
@@ -86,6 +86,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Merkado empório 45 - Produtos Naturais e Frigorífico" },
+      { name: "description", content: "Empório especializado em produtos naturais, 
+suplementos e frigorífico. Faça seu pedido pelo WhatsApp!" },
+      { property: "og:description", content: "Empório especializado em produtos naturais, 
+suplementos e frigorífico. Faça seu pedido pelo WhatsApp!" },
+      { name: "twitter:description", content: "Empório especializado em produtos naturais, 
+suplementos e frigorífico. Faça seu pedido pelo WhatsApp!" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/gEY8cEbxUNYneLfRMjH3thxEB0a2/social-images/social-1778463154236-IMG_9786.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/gEY8cEbxUNYneLfRMjH3thxEB0a2/social-images/social-1778463154236-IMG_9786.webp" },
     ],
     links: [
       {
