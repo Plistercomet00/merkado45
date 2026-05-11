@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MessageCircle, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Search, Instagram, MapPin, Clock, Leaf, Beef, Pill, Sparkles, ShieldCheck, HeartHandshake } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import {
   CATEGORIAS,
   supabase,
@@ -78,7 +79,7 @@ function Index() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold shadow-sm active:scale-95 transition-transform"
           >
-            <MessageCircle className="h-4 w-4" />
+            <FaWhatsapp className="h-4 w-4" />
             WhatsApp
           </a>
         </div>
@@ -226,7 +227,7 @@ function Index() {
               aria-label="WhatsApp"
               className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center active:scale-95 transition-transform"
             >
-              <MessageCircle className="h-6 w-6" />
+              <FaWhatsapp className="h-6 w-6" />
             </a>
           </div>
           <div className="h-px w-16 bg-white/20 mt-2" />
