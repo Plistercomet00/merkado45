@@ -162,10 +162,26 @@ function Index() {
                 </span>
                 <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
                 {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
-                <div className="mt-2 flex gap-4 text-sm font-semibold text-foreground">
-                  {p.preco_100g != null && <span>100g · R$ {p.preco_100g.toFixed(2)}</span>}
-                  {p.preco_kg != null && <span>1kg · R$ {p.preco_kg.toFixed(2)}</span>}
-                </div>
+                {(p.preco_100g != null || p.preco_kg != null) && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {p.preco_100g != null && (
+                      <div className="rounded-xl bg-muted p-3 text-center">
+                        <p className="text-xs text-muted-foreground mb-1">100g</p>
+                        <p className="text-base font-bold text-foreground">
+                          R$ {p.preco_100g.toFixed(2).replace(".", ",")}
+                        </p>
+                      </div>
+                    )}
+                    {p.preco_kg != null && (
+                      <div className="rounded-xl bg-muted p-3 text-center">
+                        <p className="text-xs text-muted-foreground mb-1">1kg</p>
+                        <p className="text-base font-bold text-foreground">
+                          R$ {p.preco_kg.toFixed(2).replace(".", ",")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <a
                   href={whatsappLinkForProduct(p.nome)}
                   target="_blank"
