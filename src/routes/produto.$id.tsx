@@ -35,7 +35,7 @@ function PrecosProduto({ p }: { p: Produto }) {
         )}
         {p.preco_kg != null && (
           <div className="rounded-2xl p-4 text-center" style={{ background: cor.bg }}>
-            <p className="text-xs font-medium mb-1 text-white/80">1 quilograma</p>
+            <p className="text-xs font-medium mb-1 text-white/80">Kg</p>
             <p className="text-2xl font-black text-white">R$ {p.preco_kg.toFixed(2).replace(".", ",")}</p>
           </div>
         )}
