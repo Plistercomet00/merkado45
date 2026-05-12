@@ -106,6 +106,13 @@ const FORM_VAZIO: FormState = {
   peso_embalagem: "",
 };
 
+function corCat(cat: string) {
+  if (cat === "Naturais") return "#2d7a1f";
+  if (cat === "Frigorífico") return "#c1393b";
+  if (cat === "Suplementos") return "#e8a020";
+  return "#6ab820";
+}
+
 function Painel({ email }: { email: string }) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,112 +203,125 @@ function Painel({ email }: { email: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+    <div className="min-h-screen bg-white pb-24">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-white/95 backdrop-blur">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between gap-2">
           <div>
             <Logo size="sm" />
-            <p className="text-xs text-muted-foreground mt-1 truncate">{email}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{email}</p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="min-h-12 px-4 inline-flex items-center gap-2 rounded-full bg-secondary text-secondary-foreground text-sm font-semibold"
+            className="h-9 px-4 inline-flex items-center gap-2 rounded-full border border-border/60 text-sm font-medium text-muted-foreground"
           >
             <LogOut className="h-4 w-4" /> Sair
           </button>
         </div>
       </header>
+
       <main className="mx-auto max-w-3xl px-4 py-4">
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="search"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar produto..."
-            className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full h-11 pl-9 pr-4 text-sm rounded-xl border border-border/60 bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
           />
         </div>
+
         <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${categoria === c ? (c === "Naturais" ? "bg-[#2d7a1f] text-white" : c === "Frigorífico" ? "bg-[#c1393b] text-white" : c === "Suplementos" ? "bg-[#e8a020] text-white" : "bg-primary text-primary-foreground") : "bg-card text-foreground border border-border"}`}
+              className={`flex-shrink-0 h-8 px-4 rounded-full text-xs font-medium transition-colors border ${categoria === c ? "text-white border-transparent" : "bg-white text-muted-foreground border-border/60"}`}
+              style={categoria === c ? { background: corCat(c), borderColor: corCat(c) } : {}}
             >
               {c}
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""} encontrado{filtrados.length !== 1 ? "s" : ""}
+
+        <p className="text-xs text-muted-foreground mb-2">
+          {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""}
         </p>
+
         {loading ? (
-          <p className="text-center text-muted-foreground py-12">Carregando...</p>
+          <div className="py-16 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
         ) : filtrados.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado.</p>
+          <p className="text-center text-muted-foreground text-sm py-12">Nenhum produto encontrado.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col divide-y divide-border/40">
             {filtrados.map((p) => (
-              <li key={p.id} className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border">
-                <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+              <li key={p.id} className="flex items-center gap-3 py-3">
+                {/* Imagem */}
+                <div className="w-14 h-14 flex-shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
                   {p.imagem_url ? (
                     <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <Image className="h-6 w-6 text-muted-foreground" />
+                    <Image className="h-5 w-5 text-muted-foreground" />
                   )}
                 </div>
+
+                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{p.nome}</p>
-                  <p className="text-xs text-muted-foreground">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${p.categoria === "Naturais" ? "bg-[#2d7a1f]" : p.categoria === "Frigorífico" ? "bg-[#c1393b]" : "bg-[#e8a020]"}`}
-                    >
-                      {p.categoria}
-                    </span>
-                    {precoLabel(p)}
-                    {!p.disponivel && " · oculto"}
-                  </p>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: corCat(p.categoria) }} />
+                    <span className="text-xs text-muted-foreground">{p.categoria}</span>
+                    {!p.disponivel && <span className="text-xs text-muted-foreground/60">· oculto</span>}
+                  </div>
+                  <p className="text-sm font-semibold text-foreground truncate">{p.nome}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{precoLabel(p)}</p>
                 </div>
-                <button
-                  onClick={() =>
-                    setEditando({
-                      id: p.id,
-                      nome: p.nome,
-                      descricao: p.descricao ?? "",
-                      categoria: p.categoria,
-                      imagem_url: p.imagem_url ?? "",
-                      disponivel: p.disponivel,
-                      preco_100g: p.preco_100g != null ? String(p.preco_100g) : "",
-                      preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
-                      preco_unidade: p.preco_unidade != null ? String(p.preco_unidade) : "",
-                      peso_embalagem: p.peso_embalagem ?? "",
-                    })
-                  }
-                  className="min-h-12 min-w-12 flex items-center justify-center rounded-full hover:bg-secondary"
-                  aria-label="Editar"
-                >
-                  <Pencil className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => excluir(p.id)}
-                  className="min-h-12 min-w-12 flex items-center justify-center rounded-full hover:bg-destructive/10 text-destructive"
-                  aria-label="Excluir"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
+
+                {/* Ações */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() =>
+                      setEditando({
+                        id: p.id,
+                        nome: p.nome,
+                        descricao: p.descricao ?? "",
+                        categoria: p.categoria,
+                        imagem_url: p.imagem_url ?? "",
+                        disponivel: p.disponivel,
+                        preco_100g: p.preco_100g != null ? String(p.preco_100g) : "",
+                        preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
+                        preco_unidade: p.preco_unidade != null ? String(p.preco_unidade) : "",
+                        peso_embalagem: p.peso_embalagem ?? "",
+                      })
+                    }
+                    className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+                    aria-label="Editar"
+                  >
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => excluir(p.id)}
+                    className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-destructive/10 transition-colors"
+                    aria-label="Excluir"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </main>
+
       <button
         onClick={() => setEditando(FORM_VAZIO)}
-        className="fixed bottom-5 right-5 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center"
+        className="fixed bottom-6 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
         aria-label="Adicionar produto"
       >
-        <Plus className="h-7 w-7" />
+        <Plus className="h-6 w-6" />
       </button>
+
       {editando && <FormModal initial={editando} onClose={() => setEditando(null)} onSave={salvar} />}
     </div>
   );
@@ -664,7 +684,7 @@ function FormModal({
         </select>
         {form.categoria === "Naturais" && (
           <>
-            <label className="block text-sm font-medium mb-1">Preco 100g (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -672,7 +692,7 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
-            <label className="block text-sm font-medium mb-1">Preco 1kg (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -684,7 +704,7 @@ function FormModal({
         )}
         {form.categoria === "Frigorífico" && (
           <>
-            <label className="block text-sm font-medium mb-1">Preco por kg (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preço por kg (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -698,12 +718,12 @@ function FormModal({
           <>
             <label className="block text-sm font-medium mb-1">Peso da embalagem</label>
             <input
-              placeholder="ex: 900g, 2kg, 60 capsulas"
+              placeholder="ex: 900g, 2kg, 60 cápsulas"
               value={form.peso_embalagem}
               onChange={(e) => setForm({ ...form, peso_embalagem: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
-            <label className="block text-sm font-medium mb-1">Preco por unidade (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preço por unidade (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -714,7 +734,7 @@ function FormModal({
           </>
         )}
         <ImageUpload value={form.imagem_url} onChange={(url) => setForm({ ...form, imagem_url: url })} />
-        <label className="block text-sm font-medium mb-1">Descricao</label>
+        <label className="block text-sm font-medium mb-1">Descrição</label>
         <textarea
           rows={4}
           value={form.descricao}
@@ -728,7 +748,7 @@ function FormModal({
             onChange={(e) => setForm({ ...form, disponivel: e.target.checked })}
             className="h-5 w-5"
           />
-          <span className="text-sm">Disponivel na vitrine</span>
+          <span className="text-sm">Disponível na vitrine</span>
         </label>
         <button
           type="submit"
