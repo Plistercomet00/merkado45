@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image, ZoomIn, ZoomOut, Check } from "lucide-react";
 import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -14,7 +14,6 @@ export const Route = createFileRoute("/admin")({
 function AdminPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setUserEmail(data.session?.user.email ?? null);
@@ -25,15 +24,12 @@ function AdminPage() {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
-
-  if (checking) {
+  if (checking)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando…</p>
+        <p className="text-muted-foreground">Carregando...</p>
       </div>
     );
-  }
-
   return userEmail ? <Painel email={userEmail} /> : <Login />;
 }
 
@@ -42,7 +38,6 @@ function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
-
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
@@ -51,7 +46,6 @@ function Login() {
     setCarregando(false);
     if (error) setErro(error.message);
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <form onSubmit={entrar} className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-sm">
@@ -81,7 +75,7 @@ function Login() {
           disabled={carregando}
           className="w-full min-h-12 rounded-full bg-primary text-primary-foreground font-semibold disabled:opacity-60"
         >
-          {carregando ? "Entrando…" : "Entrar"}
+          {carregando ? "Entrando..." : "Entrar"}
         </button>
       </form>
     </div>
@@ -100,7 +94,6 @@ type FormState = {
   preco_unidade: string;
   peso_embalagem: string;
 };
-
 const FORM_VAZIO: FormState = {
   nome: "",
   descricao: "",
@@ -126,18 +119,19 @@ function Painel({ email }: { email: string }) {
     setProdutos((data as Produto[]) ?? []);
     setLoading(false);
   }
-
   useEffect(() => {
     carregar();
   }, []);
 
-  const filtrados = useMemo(() => {
-    return produtos.filter((p) => {
-      const okCat = categoria === "Todos" || p.categoria === categoria;
-      const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
-      return okCat && okBusca;
-    });
-  }, [produtos, categoria, busca]);
+  const filtrados = useMemo(
+    () =>
+      produtos.filter((p) => {
+        const okCat = categoria === "Todos" || p.categoria === categoria;
+        const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
+        return okCat && okBusca;
+      }),
+    [produtos, categoria, busca],
+  );
 
   async function salvar(form: FormState) {
     const payload: Record<string, unknown> = {
@@ -154,7 +148,7 @@ function Painel({ email }: { email: string }) {
     if (form.categoria === "Naturais") {
       payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
-    } else if (form.categoria === "Frigorífico") {
+    } else if (form.categoria === "Frigorifico") {
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
     } else if (form.categoria === "Suplementos") {
       payload.peso_embalagem = form.peso_embalagem || null;
@@ -190,7 +184,7 @@ function Painel({ email }: { email: string }) {
       if (p.preco_kg != null) parts.push(`1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`);
       return parts.join(" · ");
     }
-    if (p.categoria === "Frigorífico")
+    if (p.categoria === "Frigorifico")
       return p.preco_kg != null ? `1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}` : "";
     if (p.categoria === "Suplementos") {
       const parts = [];
@@ -217,7 +211,6 @@ function Painel({ email }: { email: string }) {
           </button>
         </div>
       </header>
-
       <main className="mx-auto max-w-3xl px-4 py-4">
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -225,39 +218,26 @@ function Painel({ email }: { email: string }) {
             type="search"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar produto…"
+            placeholder="Buscar produto..."
             className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-
         <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${
-                categoria === c
-                  ? c === "Naturais"
-                    ? "bg-[#2d7a1f] text-white"
-                    : c === "Frigorífico"
-                      ? "bg-[#c1393b] text-white"
-                      : c === "Suplementos"
-                        ? "bg-[#e8a020] text-white"
-                        : "bg-primary text-primary-foreground"
-                  : "bg-card text-foreground border border-border"
-              }`}
+              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${categoria === c ? (c === "Naturais" ? "bg-[#2d7a1f] text-white" : c === "Frigorifico" ? "bg-[#c1393b] text-white" : c === "Suplementos" ? "bg-[#e8a020] text-white" : "bg-primary text-primary-foreground") : "bg-card text-foreground border border-border"}`}
             >
               {c}
             </button>
           ))}
         </div>
-
         <p className="text-xs text-muted-foreground mb-3">
           {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""} encontrado{filtrados.length !== 1 ? "s" : ""}
         </p>
-
         {loading ? (
-          <p className="text-center text-muted-foreground py-12">Carregando…</p>
+          <p className="text-center text-muted-foreground py-12">Carregando...</p>
         ) : filtrados.length === 0 ? (
           <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado.</p>
         ) : (
@@ -275,13 +255,7 @@ function Painel({ email }: { email: string }) {
                   <p className="font-semibold truncate">{p.nome}</p>
                   <p className="text-xs text-muted-foreground">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${
-                        p.categoria === "Naturais"
-                          ? "bg-[#2d7a1f]"
-                          : p.categoria === "Frigorífico"
-                            ? "bg-[#c1393b]"
-                            : "bg-[#e8a020]"
-                      }`}
+                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${p.categoria === "Naturais" ? "bg-[#2d7a1f]" : p.categoria === "Frigorifico" ? "bg-[#c1393b]" : "bg-[#e8a020]"}`}
                     >
                       {p.categoria}
                     </span>
@@ -321,7 +295,6 @@ function Painel({ email }: { email: string }) {
           </ul>
         )}
       </main>
-
       <button
         onClick={() => setEditando(FORM_VAZIO)}
         className="fixed bottom-5 right-5 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center"
@@ -329,7 +302,6 @@ function Painel({ email }: { email: string }) {
       >
         <Plus className="h-7 w-7" />
       </button>
-
       {editando && <FormModal initial={editando} onClose={() => setEditando(null)} onSave={salvar} />}
     </div>
   );
@@ -346,11 +318,12 @@ function ImageCropper({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
+  const lastTouchDist = useRef(0);
+  const lastTouchPos = useRef({ x: 0, y: 0 });
   const CROP_SIZE = 300;
 
   useEffect(() => {
@@ -387,33 +360,82 @@ function ImageCropper({
     ctx.beginPath();
     ctx.moveTo(CROP_SIZE / 3, 0);
     ctx.lineTo(CROP_SIZE / 3, CROP_SIZE);
-    ctx.moveTo((CROP_SIZE / 3) * 2, 0);
-    ctx.lineTo((CROP_SIZE / 3) * 2, CROP_SIZE);
+    ctx.moveTo((CROP_SIZE * 2) / 3, 0);
+    ctx.lineTo((CROP_SIZE * 2) / 3, CROP_SIZE);
     ctx.moveTo(0, CROP_SIZE / 3);
     ctx.lineTo(CROP_SIZE, CROP_SIZE / 3);
-    ctx.moveTo(0, (CROP_SIZE / 3) * 2);
-    ctx.lineTo(CROP_SIZE, (CROP_SIZE / 3) * 2);
+    ctx.moveTo(0, (CROP_SIZE * 2) / 3);
+    ctx.lineTo(CROP_SIZE, (CROP_SIZE * 2) / 3);
     ctx.stroke();
   }, [scale, offset]);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    function dist(e: TouchEvent) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function onTouchStart(e: TouchEvent) {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        lastTouchDist.current = dist(e);
+        lastTouchPos.current = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+      } else if (e.touches.length === 1) {
+        lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    }
+    function onTouchMove(e: TouchEvent) {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        const d = dist(e);
+        const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        if (lastTouchDist.current > 0) setScale((s) => Math.min(3, Math.max(0.3, s * (d / lastTouchDist.current))));
+        setOffset((o) => ({ x: o.x + cx - lastTouchPos.current.x, y: o.y + cy - lastTouchPos.current.y }));
+        lastTouchDist.current = d;
+        lastTouchPos.current = { x: cx, y: cy };
+      } else if (e.touches.length === 1) {
+        setOffset((o) => ({
+          x: o.x + e.touches[0].clientX - lastTouchPos.current.x,
+          y: o.y + e.touches[0].clientY - lastTouchPos.current.y,
+        }));
+        lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    }
+    function onTouchEnd() {
+      lastTouchDist.current = 0;
+    }
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd);
+    return () => {
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   function onPointerDown(e: React.PointerEvent) {
+    if (e.pointerType === "touch") return;
     setDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }
-
   function onPointerMove(e: React.PointerEvent) {
-    if (!dragging) return;
+    if (!dragging || e.pointerType === "touch") return;
     setOffset({
       x: dragStart.current.ox + e.clientX - dragStart.current.x,
       y: dragStart.current.oy + e.clientY - dragStart.current.y,
     });
   }
-
   function onPointerUp() {
     setDragging(false);
   }
-
   function confirm() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -435,21 +457,23 @@ function ImageCropper({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div
-          ref={containerRef}
-          className="flex items-center justify-center bg-black p-2"
-          style={{ touchAction: "none" }}
-        >
+        <div className="flex items-center justify-center bg-black p-2">
           <canvas
             ref={canvasRef}
-            style={{ width: CROP_SIZE, height: CROP_SIZE, cursor: dragging ? "grabbing" : "grab", maxWidth: "100%" }}
+            style={{
+              width: CROP_SIZE,
+              height: CROP_SIZE,
+              maxWidth: "100%",
+              cursor: dragging ? "grabbing" : "grab",
+              touchAction: "none",
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           />
         </div>
         <div className="px-4 py-3 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center mb-3">Arraste para reposicionar</p>
+          <p className="text-xs text-muted-foreground text-center mb-3">Arraste para mover · Dois dedos para zoom</p>
           <div className="flex items-center gap-3 mb-3">
             <button
               type="button"
@@ -507,7 +531,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      setErro("Imagem muito grande. Máximo 10MB.");
+      setErro("Imagem muito grande. Maximo 10MB.");
       return;
     }
     setErro(null);
@@ -539,9 +563,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
   return (
     <div className="mb-3">
       <label className="block text-sm font-medium mb-1">Imagem do produto</label>
-
       {cropSrc && <ImageCropper src={cropSrc} onConfirm={handleCropConfirm} onCancel={() => setCropSrc(null)} />}
-
       {value ? (
         <div className="relative mb-2">
           <img src={value} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
@@ -559,17 +581,16 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
           className="w-full h-32 rounded-xl border-2 border-dashed border-input bg-muted flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-colors"
         >
           {uploading ? (
-            <p className="text-sm text-muted-foreground">Enviando…</p>
+            <p className="text-sm text-muted-foreground">Enviando...</p>
           ) : (
             <>
               <Upload className="h-6 w-6 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Toque para escolher uma foto</p>
-              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP · máx 10MB</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP - max 10MB</p>
             </>
           )}
         </div>
       )}
-
       {value && (
         <button
           type="button"
@@ -579,7 +600,6 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
           <Upload className="h-4 w-4" /> Trocar imagem
         </button>
       )}
-
       {erro && <p className="text-xs text-destructive mt-1">{erro}</p>}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
     </div>
@@ -598,7 +618,6 @@ function FormModal({
   const [form, setForm] = useState<FormState>(initial);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
@@ -606,7 +625,6 @@ function FormModal({
     await onSave(form);
     setSalvando(false);
   }
-
   return (
     <div className="fixed inset-0 z-50 bg-foreground/40 flex items-end sm:items-center justify-center">
       <form
@@ -624,9 +642,7 @@ function FormModal({
             <X className="h-5 w-5" />
           </button>
         </div>
-
         {erro && <div className="mb-3 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{erro}</div>}
-
         <label className="block text-sm font-medium mb-1">Nome</label>
         <input
           required
@@ -634,7 +650,6 @@ function FormModal({
           onChange={(e) => setForm({ ...form, nome: e.target.value })}
           className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
         />
-
         <label className="block text-sm font-medium mb-1">Categoria</label>
         <select
           value={form.categoria}
@@ -647,10 +662,9 @@ function FormModal({
             </option>
           ))}
         </select>
-
         {form.categoria === "Naturais" && (
           <>
-            <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preco 100g (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -658,7 +672,7 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
-            <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preco 1kg (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -668,10 +682,9 @@ function FormModal({
             />
           </>
         )}
-
-        {form.categoria === "Frigorífico" && (
+        {form.categoria === "Frigorifico" && (
           <>
-            <label className="block text-sm font-medium mb-1">Preço por kg (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preco por kg (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -681,17 +694,16 @@ function FormModal({
             />
           </>
         )}
-
         {form.categoria === "Suplementos" && (
           <>
             <label className="block text-sm font-medium mb-1">Peso da embalagem</label>
             <input
-              placeholder="ex: 900g, 2kg, 60 cápsulas"
+              placeholder="ex: 900g, 2kg, 60 capsulas"
               value={form.peso_embalagem}
               onChange={(e) => setForm({ ...form, peso_embalagem: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
-            <label className="block text-sm font-medium mb-1">Preço por unidade (R$)</label>
+            <label className="block text-sm font-medium mb-1">Preco por unidade (R$)</label>
             <input
               inputMode="decimal"
               placeholder="0,00"
@@ -701,17 +713,14 @@ function FormModal({
             />
           </>
         )}
-
         <ImageUpload value={form.imagem_url} onChange={(url) => setForm({ ...form, imagem_url: url })} />
-
-        <label className="block text-sm font-medium mb-1">Descrição</label>
+        <label className="block text-sm font-medium mb-1">Descricao</label>
         <textarea
           rows={4}
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
           className="w-full p-3 mb-3 rounded-lg border border-input bg-background text-base"
         />
-
         <label className="flex items-center gap-2 mb-5 min-h-12">
           <input
             type="checkbox"
@@ -719,15 +728,14 @@ function FormModal({
             onChange={(e) => setForm({ ...form, disponivel: e.target.checked })}
             className="h-5 w-5"
           />
-          <span className="text-sm">Disponível na vitrine</span>
+          <span className="text-sm">Disponivel na vitrine</span>
         </label>
-
         <button
           type="submit"
           disabled={salvando}
           className="w-full min-h-12 rounded-full bg-primary text-primary-foreground font-semibold disabled:opacity-60"
         >
-          {salvando ? "Salvando…" : "Salvar"}
+          {salvando ? "Salvando..." : "Salvar"}
         </button>
       </form>
     </div>
