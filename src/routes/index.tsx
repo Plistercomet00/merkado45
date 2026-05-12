@@ -1,17 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Search,
-  Instagram,
-  MapPin,
-  Clock,
-  Leaf,
-  Beef,
-  Pill,
-  Sparkles,
-  ShieldCheck,
-  HeartHandshake,
-} from "lucide-react";
+import { Search, Instagram, MapPin, Clock } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { CATEGORIAS, supabase, whatsappGeneralLink, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -21,29 +10,40 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Merkado empório 45 — Vitrine" },
-      {
-        name: "description",
-        content: "Veja os produtos do Merkado empório 45 e peça pelo WhatsApp.",
-      },
+      { name: "description", content: "Veja os produtos do Merkado empório 45 e peça pelo WhatsApp." },
     ],
   }),
 });
 
+function corCat(cat: string) {
+  if (cat === "Naturais") return "#2d7a1f";
+  if (cat === "Frigorífico") return "#c1393b";
+  if (cat === "Suplementos") return "#e8a020";
+  return "#6ab820";
+}
+
 function PrecoResumido({ p }: { p: Produto }) {
+  const cor = corCat(p.categoria);
+
   if (p.categoria === "Naturais") {
     if (p.preco_100g == null && p.preco_kg == null) return null;
     return (
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 flex gap-3 items-center">
         {p.preco_100g != null && (
-          <div className="rounded-xl bg-muted p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">100g</p>
-            <p className="text-base font-bold text-foreground">R$ {p.preco_100g.toFixed(2).replace(".", ",")}</p>
+          <div>
+            <p className="text-xs text-muted-foreground">100g</p>
+            <p className="text-sm font-bold" style={{ color: cor }}>
+              R$ {p.preco_100g.toFixed(2).replace(".", ",")}
+            </p>
           </div>
         )}
+        {p.preco_100g != null && p.preco_kg != null && <div className="w-px h-6 bg-border" />}
         {p.preco_kg != null && (
-          <div className="rounded-xl bg-muted p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">1kg</p>
-            <p className="text-base font-bold text-foreground">R$ {p.preco_kg.toFixed(2).replace(".", ",")}</p>
+          <div>
+            <p className="text-xs text-muted-foreground">1kg</p>
+            <p className="text-sm font-bold" style={{ color: cor }}>
+              R$ {p.preco_kg.toFixed(2).replace(".", ",")}
+            </p>
           </div>
         )}
       </div>
@@ -54,10 +54,10 @@ function PrecoResumido({ p }: { p: Produto }) {
     if (p.preco_kg == null) return null;
     return (
       <div className="mt-3">
-        <div className="rounded-xl bg-muted p-3 text-center">
-          <p className="text-xs text-muted-foreground mb-1">Preço por kg</p>
-          <p className="text-base font-bold text-foreground">R$ {p.preco_kg.toFixed(2).replace(".", ",")}</p>
-        </div>
+        <p className="text-xs text-muted-foreground">por kg</p>
+        <p className="text-sm font-bold" style={{ color: cor }}>
+          R$ {p.preco_kg.toFixed(2).replace(".", ",")}
+        </p>
       </div>
     );
   }
@@ -65,17 +65,20 @@ function PrecoResumido({ p }: { p: Produto }) {
   if (p.categoria === "Suplementos") {
     if (p.preco_unidade == null && !p.peso_embalagem) return null;
     return (
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 flex gap-3 items-center">
         {p.peso_embalagem && (
-          <div className="rounded-xl bg-muted p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Embalagem</p>
-            <p className="text-base font-bold text-foreground">{p.peso_embalagem}</p>
+          <div>
+            <p className="text-xs text-muted-foreground">Embalagem</p>
+            <p className="text-sm font-bold text-foreground">{p.peso_embalagem}</p>
           </div>
         )}
+        {p.peso_embalagem && p.preco_unidade != null && <div className="w-px h-6 bg-border" />}
         {p.preco_unidade != null && (
-          <div className="rounded-xl bg-muted p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Preço</p>
-            <p className="text-base font-bold text-foreground">R$ {p.preco_unidade.toFixed(2).replace(".", ",")}</p>
+          <div>
+            <p className="text-xs text-muted-foreground">Preço</p>
+            <p className="text-sm font-bold" style={{ color: cor }}>
+              R$ {p.preco_unidade.toFixed(2).replace(".", ",")}
+            </p>
           </div>
         )}
       </div>
@@ -118,16 +121,16 @@ function Index() {
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const categoryCards = [
-    { nome: "Naturais", titulo: "Produtos Naturais", bg: "bg-secondary", Icon: Leaf },
-    { nome: "Frigorífico", titulo: "Frigorífico", bg: "bg-brand-meat", Icon: Beef },
-    { nome: "Suplementos", titulo: "Suplementos", bg: "bg-brand-supp", Icon: Pill },
-  ] as const;
+  const cats = [
+    { nome: "Naturais", emoji: "🌿", desc: "Ervas, temperos e grãos" },
+    { nome: "Frigorífico", emoji: "🥩", desc: "Carnes, queijos e frios" },
+    { nome: "Suplementos", emoji: "💊", desc: "Whey, creatina e mais" },
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-white text-foreground">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 h-14 border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-40 h-14 border-b border-border/60 bg-white/95 backdrop-blur">
         <div className="mx-auto max-w-3xl h-full px-4 flex items-center justify-between">
           <Link to="/" aria-label="Início">
             <Logo size="sm" />
@@ -136,7 +139,8 @@ function Index() {
             href={whatsappGeneralLink()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold shadow-sm active:scale-95 transition-transform"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-white text-sm font-medium active:scale-95 transition-transform"
+            style={{ background: "#25d366" }}
           >
             <FaWhatsapp className="h-4 w-4" />
             WhatsApp
@@ -144,22 +148,23 @@ function Index() {
         </div>
       </header>
 
-      {/* CATEGORIAS */}
-      <section className="mx-auto max-w-3xl px-4 pt-6 pb-10">
-        <div className="grid grid-cols-1 gap-3">
-          {categoryCards.map(({ nome, titulo, bg, Icon }) => (
+      {/* CATEGORIAS — minimalistas, linha com ícone */}
+      <section className="mx-auto max-w-3xl px-4 pt-6 pb-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">Categorias</p>
+        <div className="grid grid-cols-3 gap-2">
+          {cats.map(({ nome, emoji, desc }) => (
             <button
               key={nome}
               onClick={() => {
                 setCategoria(nome);
                 setTimeout(() => scrollTo("vitrine"), 30);
               }}
-              className={`${bg} text-white rounded-2xl p-5 min-h-[88px] flex items-center justify-between text-left shadow-md active:scale-[0.98] transition-transform`}
+              className="flex flex-col items-start gap-1 p-3 rounded-xl border border-border/60 bg-white active:scale-[0.97] transition-transform hover:border-border"
+              style={categoria === nome ? { borderColor: corCat(nome), background: corCat(nome) + "08" } : {}}
             >
-              <div>
-                <p className="text-lg font-extrabold">{titulo}</p>
-              </div>
-              <Icon className="h-10 w-10 opacity-90" />
+              <span className="text-xl">{emoji}</span>
+              <span className="text-xs font-semibold text-foreground leading-tight">{nome}</span>
+              <span className="text-xs text-muted-foreground leading-tight">{desc}</span>
             </button>
           ))}
         </div>
@@ -167,75 +172,89 @@ function Index() {
 
       {/* VITRINE */}
       <section id="vitrine" className="mx-auto max-w-3xl px-4 pb-12 scroll-mt-16">
-        <h2 className="text-xl font-bold mb-3">Nossos produtos</h2>
-
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        {/* Busca + filtros */}
+        <div className="relative mb-3 mt-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="search"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar produto…"
-            className="w-full h-12 pl-10 pr-4 text-base rounded-xl border border-input bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full h-11 pl-9 pr-4 text-sm rounded-xl border border-border/60 bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
           />
         </div>
 
-        <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
+        <div className="flex flex-nowrap overflow-x-auto gap-2 mb-5 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`flex-shrink-0 min-h-12 px-5 rounded-full text-base font-semibold transition-colors ${
-                categoria === c
-                  ? c === "Naturais"
-                    ? "bg-[#2d7a1f] text-white"
-                    : c === "Frigorífico"
-                      ? "bg-[#c1393b] text-white"
-                      : c === "Suplementos"
-                        ? "bg-[#e8a020] text-white"
-                        : "bg-primary text-primary-foreground"
-                  : "bg-card text-foreground border border-border"
+              className={`flex-shrink-0 h-8 px-4 rounded-full text-xs font-medium transition-colors border ${
+                categoria === c ? "text-white border-transparent" : "bg-white text-muted-foreground border-border/60"
               }`}
+              style={categoria === c ? { background: corCat(c), borderColor: corCat(c) } : {}}
             >
               {c}
             </button>
           ))}
         </div>
 
+        {/* Lista de produtos */}
         {loading ? (
-          <p className="text-center text-muted-foreground py-12">Carregando produtos…</p>
+          <div className="py-16 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Carregando…</p>
+          </div>
         ) : filtrados.length === 0 ? (
-          <div className="text-center py-12 rounded-2xl bg-card border border-border">
-            <p className="text-muted-foreground">Nenhum produto encontrado.</p>
+          <div className="py-16 text-center">
+            <p className="text-muted-foreground text-sm">Nenhum produto encontrado.</p>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-3">
+          <ul className="flex flex-col divide-y divide-border/40">
             {filtrados.map((p) => (
               <li key={p.id}>
                 <Link
                   to="/produto/$id"
                   params={{ id: p.id }}
-                  className="block rounded-2xl bg-card border border-border p-4 shadow-sm active:scale-[0.99] transition-transform"
+                  className="flex gap-3 py-4 active:bg-muted/30 transition-colors"
                 >
-                  {p.imagem_url && (
-                    <img src={p.imagem_url} alt={p.nome} className="w-full h-48 object-cover rounded-xl mb-3" />
-                  )}
-                  <span
-                    className={`inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                      p.categoria === "Naturais"
-                        ? "bg-[#2d7a1f] text-white"
-                        : p.categoria === "Frigorífico"
-                          ? "bg-[#c1393b] text-white"
-                          : p.categoria === "Suplementos"
-                            ? "bg-[#e8a020] text-white"
-                            : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    {p.categoria}
-                  </span>
-                  <h3 className="mt-2 text-lg font-bold text-foreground">{p.nome}</h3>
-                  {p.descricao && <p className="mt-1 text-base text-muted-foreground line-clamp-2">{p.descricao}</p>}
-                  <PrecoResumido p={p} />
+                  {/* Imagem quadrada */}
+                  <div className="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+                    {p.imagem_url ? (
+                      <img src={p.imagem_url} alt={p.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl opacity-40">
+                        {p.categoria === "Naturais" ? "🌿" : p.categoria === "Frigorífico" ? "🥩" : "💊"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: corCat(p.categoria) }}
+                      />
+                      <span className="text-xs text-muted-foreground">{p.categoria}</span>
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground leading-snug truncate">{p.nome}</h3>
+                    {p.descricao && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{p.descricao}</p>}
+                    <PrecoResumido p={p} />
+                  </div>
+
+                  {/* Seta */}
+                  <div className="flex items-center flex-shrink-0 self-center">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M6 4l4 4-4 4"
+                        stroke="#ccc"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
                 </Link>
               </li>
             ))}
@@ -243,70 +262,42 @@ function Index() {
         )}
       </section>
 
-      {/* DIFERENCIAIS */}
-      <section className="bg-secondary text-secondary-foreground py-10">
-        <div className="mx-auto max-w-3xl px-4">
-          <ul className="grid grid-cols-3 gap-3">
-            {[
-              { Icon: Sparkles, title: "Seleção cuidadosa", desc: "Cada item é escolhido a dedo pensando em você." },
-              {
-                Icon: ShieldCheck,
-                title: "Produtos frescos",
-                desc: "Frescor e qualidade do começo ao fim da prateleira.",
-              },
-              {
-                Icon: HeartHandshake,
-                title: "Atendimento especializado",
-                desc: "Equipe pronta para te orientar pelo WhatsApp.",
-              },
-            ].map(({ Icon, title, desc }) => (
-              <li key={title} className="flex flex-col items-center text-center gap-2 rounded-2xl bg-white/10 p-4">
-                <div className="h-12 w-12 rounded-full bg-white/15 flex items-center justify-center">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <p className="text-sm font-bold leading-tight">{title}</p>
-                <p className="text-xs opacity-90 leading-snug">{desc}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {/* RODAPÉ */}
-      <footer className="bg-accent text-accent-foreground">
-        <div className="mx-auto max-w-3xl px-6 py-12 flex flex-col items-center text-center gap-5">
-          <Logo size="md" variant="onDark" />
-          <div className="h-px w-16 bg-white/20" />
-          <div className="flex items-start gap-2 text-base">
-            <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 opacity-80" />
-            <p>Rua Taquaritinga, 45 — Casa Amarela, Recife/PE</p>
+      <footer className="border-t border-border/60 bg-white">
+        <div className="mx-auto max-w-3xl px-4 py-8 flex flex-col gap-4">
+          <Logo size="sm" />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <span>Rua Taquaritinga, 45 — Casa Amarela, Recife/PE</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 flex-shrink-0" />
+              <span>Segunda a Sábado · 07h às 18h</span>
+            </div>
           </div>
-          <div className="flex items-start gap-2 text-base">
-            <Clock className="h-5 w-5 mt-0.5 flex-shrink-0 opacity-80" />
-            <p>Segunda a Sábado · 07h às 18h</p>
-          </div>
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex items-center gap-3 pt-1">
             <a
               href="https://www.instagram.com/merkado45.emporio/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition-all"
+              className="h-10 w-10 rounded-full border border-border/60 flex items-center justify-center active:scale-95 transition-all"
             >
-              <Instagram className="h-6 w-6" />
+              <Instagram className="h-5 w-5 text-muted-foreground" />
             </a>
             <a
               href={whatsappGeneralLink()}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
-              className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center active:scale-95 transition-transform"
+              className="h-10 w-10 rounded-full flex items-center justify-center active:scale-95 transition-transform text-white"
+              style={{ background: "#25d366" }}
             >
-              <FaWhatsapp className="h-6 w-6" />
+              <FaWhatsapp className="h-5 w-5" />
             </a>
           </div>
-          <div className="h-px w-16 bg-white/20 mt-2" />
-          <p className="text-xs opacity-70">© {new Date().getFullYear()} Merkado empório 45</p>
+          <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Merkado empório 45</p>
         </div>
       </footer>
     </div>
