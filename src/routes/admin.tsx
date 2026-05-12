@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
-import { LogOut, Plus, Pencil, Trash2, X, Search } from "lucide-react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image } from "lucide-react";
 import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
@@ -47,10 +47,7 @@ function Login() {
     e.preventDefault();
     setErro(null);
     setCarregando(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
     setCarregando(false);
     if (error) setErro(error.message);
   }
@@ -195,9 +192,8 @@ function Painel({ email }: { email: string }) {
       if (p.preco_kg != null) parts.push(`1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`);
       return parts.join(" · ");
     }
-    if (p.categoria === "Frigorífico") {
+    if (p.categoria === "Frigorífico")
       return p.preco_kg != null ? `1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}` : "";
-    }
     if (p.categoria === "Suplementos") {
       const parts = [];
       if (p.peso_embalagem) parts.push(p.peso_embalagem);
@@ -270,8 +266,12 @@ function Painel({ email }: { email: string }) {
           <ul className="space-y-2">
             {filtrados.map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border">
-                <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden">
-                  {p.imagem_url && <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />}
+                <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                  {p.imagem_url ? (
+                    <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Image className="h-6 w-6 text-muted-foreground" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{p.nome}</p>
@@ -333,6 +333,99 @@ function Painel({ email }: { email: string }) {
       </button>
 
       {editando && <FormModal initial={editando} onClose={() => setEditando(null)} onSave={salvar} />}
+    </div>
+  );
+}
+
+function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErro("Imagem muito grande. Máximo 5MB.");
+      return;
+    }
+
+    setErro(null);
+    setUploading(true);
+
+    const ext = file.name.split(".").pop();
+    const nome = `${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage.from("produtos").upload(nome, file, { upsert: true });
+
+    if (uploadError) {
+      setErro("Erro ao fazer upload: " + uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("produtos").getPublicUrl(nome);
+    onChange(data.publicUrl);
+    setUploading(false);
+  }
+
+  return (
+    <div className="mb-3">
+      <label className="block text-sm font-medium mb-1">Imagem do produto</label>
+
+      {value ? (
+        <div className="relative mb-2">
+          <img src={value} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute top-2 right-2 h-8 w-8 bg-black/50 text-white rounded-full flex items-center justify-center"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="w-full h-32 rounded-xl border-2 border-dashed border-input bg-muted flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-colors"
+        >
+          {uploading ? (
+            <p className="text-sm text-muted-foreground">Enviando…</p>
+          ) : (
+            <>
+              <Upload className="h-6 w-6 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Toque para escolher uma foto</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP · máx 5MB</p>
+            </>
+          )}
+        </div>
+      )}
+
+      {!value && !uploading && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="mt-2 w-full h-10 rounded-lg border border-input bg-background text-sm text-muted-foreground flex items-center justify-center gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          {value ? "Trocar imagem" : "Escolher imagem"}
+        </button>
+      )}
+
+      {value && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="mt-2 w-full h-10 rounded-lg border border-input bg-background text-sm text-muted-foreground flex items-center justify-center gap-2"
+        >
+          <Upload className="h-4 w-4" /> Trocar imagem
+        </button>
+      )}
+
+      {erro && <p className="text-xs text-destructive mt-1">{erro}</p>}
+
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
   );
 }
@@ -453,14 +546,7 @@ function FormModal({
           </>
         )}
 
-        <label className="block text-sm font-medium mb-1">URL da imagem</label>
-        <input
-          type="url"
-          placeholder="https://…"
-          value={form.imagem_url}
-          onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
-          className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
-        />
+        <ImageUpload value={form.imagem_url} onChange={(url) => setForm({ ...form, imagem_url: url })} />
 
         <label className="block text-sm font-medium mb-1">Descrição</label>
         <textarea
