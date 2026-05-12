@@ -1,7 +1,6 @@
 // v2
 // redesign minimalista v3
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
