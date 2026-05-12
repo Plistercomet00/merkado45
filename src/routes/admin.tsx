@@ -357,7 +357,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
     const ext = file.name.split(".").pop();
     const nome = `${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage.from("produtos").upload(nome, file, { upsert: true });
+    const { error: uploadError } = await supabase.storage.from("produto").upload(nome, file, { upsert: true });
 
     if (uploadError) {
       setErro("Erro ao fazer upload: " + uploadError.message);
@@ -365,7 +365,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
       return;
     }
 
-    const { data } = supabase.storage.from("produtos").getPublicUrl(nome);
+    const { data } = supabase.storage.from("produto").getPublicUrl(nome);
     onChange(data.publicUrl);
     setUploading(false);
   }
