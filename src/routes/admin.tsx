@@ -148,7 +148,7 @@ function Painel({ email }: { email: string }) {
     if (form.categoria === "Naturais") {
       payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
-    } else if (form.categoria === "Frigorifico") {
+    } else if (form.categoria === "Frigorífico") {
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
     } else if (form.categoria === "Suplementos") {
       payload.peso_embalagem = form.peso_embalagem || null;
@@ -184,7 +184,7 @@ function Painel({ email }: { email: string }) {
       if (p.preco_kg != null) parts.push(`1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`);
       return parts.join(" · ");
     }
-    if (p.categoria === "Frigorifico")
+    if (p.categoria === "Frigorífico")
       return p.preco_kg != null ? `1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}` : "";
     if (p.categoria === "Suplementos") {
       const parts = [];
@@ -227,7 +227,7 @@ function Painel({ email }: { email: string }) {
             <button
               key={c}
               onClick={() => setCategoria(c)}
-              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${categoria === c ? (c === "Naturais" ? "bg-[#2d7a1f] text-white" : c === "Frigorifico" ? "bg-[#c1393b] text-white" : c === "Suplementos" ? "bg-[#e8a020] text-white" : "bg-primary text-primary-foreground") : "bg-card text-foreground border border-border"}`}
+              className={`flex-shrink-0 min-h-10 px-4 rounded-full text-sm font-semibold transition-colors ${categoria === c ? (c === "Naturais" ? "bg-[#2d7a1f] text-white" : c === "Frigorífico" ? "bg-[#c1393b] text-white" : c === "Suplementos" ? "bg-[#e8a020] text-white" : "bg-primary text-primary-foreground") : "bg-card text-foreground border border-border"}`}
             >
               {c}
             </button>
@@ -255,7 +255,7 @@ function Painel({ email }: { email: string }) {
                   <p className="font-semibold truncate">{p.nome}</p>
                   <p className="text-xs text-muted-foreground">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${p.categoria === "Naturais" ? "bg-[#2d7a1f]" : p.categoria === "Frigorifico" ? "bg-[#c1393b]" : "bg-[#e8a020]"}`}
+                      className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-bold mr-1 ${p.categoria === "Naturais" ? "bg-[#2d7a1f]" : p.categoria === "Frigorífico" ? "bg-[#c1393b]" : "bg-[#e8a020]"}`}
                     >
                       {p.categoria}
                     </span>
@@ -682,7 +682,7 @@ function FormModal({
             />
           </>
         )}
-        {form.categoria === "Frigorifico" && (
+        {form.categoria === "Frigorífico" && (
           <>
             <label className="block text-sm font-medium mb-1">Preco por kg (R$)</label>
             <input
