@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useMemo, useRef } from "react";
-import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image } from "lucide-react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image, ZoomIn, ZoomOut, Check } from "lucide-react";
 import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
@@ -151,7 +151,6 @@ function Painel({ email }: { email: string }) {
       preco_unidade: null,
       peso_embalagem: null,
     };
-
     if (form.categoria === "Naturais") {
       payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
@@ -161,7 +160,6 @@ function Painel({ email }: { email: string }) {
       payload.peso_embalagem = form.peso_embalagem || null;
       payload.preco_unidade = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
     }
-
     if (form.id) {
       const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error) {
@@ -337,34 +335,202 @@ function Painel({ email }: { email: string }) {
   );
 }
 
+function ImageCropper({
+  src,
+  onConfirm,
+  onCancel,
+}: {
+  src: string;
+  onConfirm: (blob: Blob) => void;
+  onCancel: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
+  const CROP_SIZE = 300;
+
+  useEffect(() => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      imgRef.current = img;
+      const minScale = CROP_SIZE / Math.min(img.width, img.height);
+      setScale(minScale);
+      setOffset({ x: 0, y: 0 });
+    };
+    img.src = src;
+  }, [src]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = CROP_SIZE;
+    canvas.height = CROP_SIZE;
+    ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    const x = (CROP_SIZE - w) / 2 + offset.x;
+    const y = (CROP_SIZE - h) / 2 + offset.y;
+    ctx.drawImage(img, x, y, w, h);
+    ctx.strokeStyle = "#6ab820";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, CROP_SIZE - 2, CROP_SIZE - 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.4)";
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(CROP_SIZE / 3, 0);
+    ctx.lineTo(CROP_SIZE / 3, CROP_SIZE);
+    ctx.moveTo((CROP_SIZE / 3) * 2, 0);
+    ctx.lineTo((CROP_SIZE / 3) * 2, CROP_SIZE);
+    ctx.moveTo(0, CROP_SIZE / 3);
+    ctx.lineTo(CROP_SIZE, CROP_SIZE / 3);
+    ctx.moveTo(0, (CROP_SIZE / 3) * 2);
+    ctx.lineTo(CROP_SIZE, (CROP_SIZE / 3) * 2);
+    ctx.stroke();
+  }, [scale, offset]);
+
+  function onPointerDown(e: React.PointerEvent) {
+    setDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!dragging) return;
+    setOffset({
+      x: dragStart.current.ox + e.clientX - dragStart.current.x,
+      y: dragStart.current.oy + e.clientY - dragStart.current.y,
+    });
+  }
+
+  function onPointerUp() {
+    setDragging(false);
+  }
+
+  function confirm() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob(
+      (blob) => {
+        if (blob) onConfirm(blob);
+      },
+      "image/jpeg",
+      0.92,
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/80 flex flex-col items-center justify-center">
+      <div className="bg-card rounded-2xl overflow-hidden w-full max-w-sm mx-4">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <p className="text-sm font-semibold">Ajustar imagem</p>
+          <button onClick={onCancel} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div
+          ref={containerRef}
+          className="flex items-center justify-center bg-black p-2"
+          style={{ touchAction: "none" }}
+        >
+          <canvas
+            ref={canvasRef}
+            style={{ width: CROP_SIZE, height: CROP_SIZE, cursor: dragging ? "grabbing" : "grab", maxWidth: "100%" }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+          />
+        </div>
+        <div className="px-4 py-3 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center mb-3">Arraste para reposicionar</p>
+          <div className="flex items-center gap-3 mb-3">
+            <button
+              type="button"
+              onClick={() => setScale((s) => Math.max(0.3, s - 0.1))}
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <input
+              type="range"
+              min="0.3"
+              max="3"
+              step="0.05"
+              value={scale}
+              onChange={(e) => setScale(Number(e.target.value))}
+              className="flex-1"
+            />
+            <button
+              type="button"
+              onClick={() => setScale((s) => Math.min(3, s + 0.1))}
+              className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 h-11 rounded-xl border border-border text-sm text-muted-foreground"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={confirm}
+              className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2"
+            >
+              <Check className="h-4 w-4" /> Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setErro("Imagem muito grande. Máximo 5MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      setErro("Imagem muito grande. Máximo 10MB.");
       return;
     }
-
     setErro(null);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) setCropSrc(ev.target.result as string);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
+  async function handleCropConfirm(blob: Blob) {
+    setCropSrc(null);
     setUploading(true);
-
-    const ext = file.name.split(".").pop();
-    const nome = `${Date.now()}.${ext}`;
-
-    const { error: uploadError } = await supabase.storage.from("produto").upload(nome, file, { upsert: true });
-
+    const nome = `${Date.now()}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from("produto")
+      .upload(nome, blob, { upsert: true, contentType: "image/jpeg" });
     if (uploadError) {
       setErro("Erro ao fazer upload: " + uploadError.message);
       setUploading(false);
       return;
     }
-
     const { data } = supabase.storage.from("produto").getPublicUrl(nome);
     onChange(data.publicUrl);
     setUploading(false);
@@ -373,6 +539,8 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
   return (
     <div className="mb-3">
       <label className="block text-sm font-medium mb-1">Imagem do produto</label>
+
+      {cropSrc && <ImageCropper src={cropSrc} onConfirm={handleCropConfirm} onCancel={() => setCropSrc(null)} />}
 
       {value ? (
         <div className="relative mb-2">
@@ -396,21 +564,10 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
             <>
               <Upload className="h-6 w-6 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Toque para escolher uma foto</p>
-              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP · máx 5MB</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP · máx 10MB</p>
             </>
           )}
         </div>
-      )}
-
-      {!value && !uploading && (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="mt-2 w-full h-10 rounded-lg border border-input bg-background text-sm text-muted-foreground flex items-center justify-center gap-2"
-        >
-          <Upload className="h-4 w-4" />
-          {value ? "Trocar imagem" : "Escolher imagem"}
-        </button>
       )}
 
       {value && (
@@ -424,8 +581,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
       )}
 
       {erro && <p className="text-xs text-destructive mt-1">{erro}</p>}
-
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
     </div>
   );
 }
