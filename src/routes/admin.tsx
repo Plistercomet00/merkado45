@@ -503,9 +503,19 @@ function ImageCropper({
   }
 
   function confirm() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.toBlob(
+    const img = imgRef.current;
+    if (!img) return;
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = CROP_SIZE;
+    exportCanvas.height = CROP_SIZE;
+    const ctx = exportCanvas.getContext("2d");
+    if (!ctx) return;
+    const w = img.width * scaleRef.current;
+    const h = img.height * scaleRef.current;
+    const x = (CROP_SIZE - w) / 2 + offsetRef.current.x;
+    const y = (CROP_SIZE - h) / 2 + offsetRef.current.y;
+    ctx.drawImage(img, x, y, w, h);
+    exportCanvas.toBlob(
       (blob) => {
         if (blob) onConfirm(blob);
       },
