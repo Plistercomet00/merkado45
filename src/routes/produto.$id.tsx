@@ -144,7 +144,12 @@ function ProdutoDetalhe() {
 
       <div className="w-full bg-white" style={{ aspectRatio: "4/3", maxHeight: 300, overflow: "hidden" }}>
         {produto.imagem_url ? (
-          <img src={produto.imagem_url} alt={produto.nome} className="w-full h-full object-cover" />
+          <img
+            src={produto.imagem_url}
+            alt={produto.nome}
+            className="w-full h-full object-contain"
+            style={{ background: "#fff" }}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 200 }}>
             <span className="text-6xl opacity-20">{emoji}</span>
