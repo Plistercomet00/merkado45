@@ -507,21 +507,22 @@ function ImageCropper({
     const img = imgRef.current;
     if (!img) return;
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = CROP_SIZE;
-    exportCanvas.height = CROP_SIZE;
+    exportCanvas.width = EXPORT_SIZE;
+    exportCanvas.height = EXPORT_SIZE;
     const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
-    const w = img.width * scaleRef.current;
-    const h = img.height * scaleRef.current;
-    const x = (CROP_SIZE - w) / 2 + offsetRef.current.x;
-    const y = (CROP_SIZE - h) / 2 + offsetRef.current.y;
+    const ratio = EXPORT_SIZE / CROP_SIZE;
+    const w = img.width * scaleRef.current * ratio;
+    const h = img.height * scaleRef.current * ratio;
+    const x = (EXPORT_SIZE - w) / 2 + offsetRef.current.x * ratio;
+    const y = (EXPORT_SIZE - h) / 2 + offsetRef.current.y * ratio;
     ctx.drawImage(img, x, y, w, h);
     exportCanvas.toBlob(
       (blob) => {
         if (blob) onConfirm(blob);
       },
       "image/jpeg",
-      0.92,
+      0.95,
     );
   }
 
