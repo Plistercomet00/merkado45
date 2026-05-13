@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image, ZoomIn, ZoomOut, Check } from "lucide-react";
+import { LogOut, Plus, Pencil, Trash2, X, Search, Upload, Image, ZoomIn, ZoomOut, Check, Eye } from "lucide-react";
 import { CATEGORIAS, supabase, type Produto } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
@@ -332,17 +332,30 @@ function ImageCropper({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const minScaleRef = useRef(1);
-  const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
+  const scaleRef = useRef(1);
+  const offsetRef = useRef({ x: 0, y: 0 });
+  const [scale, setScaleState] = useState(1);
+  const [offset, setOffsetState] = useState({ x: 0, y: 0 });
   const [imgReady, setImgReady] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const lastTouchDist = useRef(0);
   const lastTouchPos = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
   const CROP_SIZE = 300;
 
-  // Carrega imagem e calcula minScale
+  function setScale(s: number) {
+    const clamped = Math.min(3, Math.max(minScaleRef.current, s));
+    scaleRef.current = clamped;
+    setScaleState(clamped);
+  }
+
+  function setOffset(o: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) {
+    const next = typeof o === "function" ? o(offsetRef.current) : o;
+    offsetRef.current = next;
+    setOffsetState(next);
+  }
+
   useEffect(() => {
     setImgReady(false);
     const img = new window.Image();
@@ -351,16 +364,16 @@ function ImageCropper({
       imgRef.current = img;
       const min = CROP_SIZE / Math.min(img.width, img.height);
       minScaleRef.current = min;
-      setScale(min);
-      setOffset({ x: 0, y: 0 });
+      scaleRef.current = min;
+      offsetRef.current = { x: 0, y: 0 };
+      setScaleState(min);
+      setOffsetState({ x: 0, y: 0 });
       setImgReady(true);
     };
     img.src = src;
   }, [src]);
 
-  // Desenha canvas — throttled via RAF
-  useEffect(() => {
-    if (!imgReady) return;
+  function draw() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       const canvas = canvasRef.current;
@@ -368,15 +381,16 @@ function ImageCropper({
       if (!canvas || !img) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+      const s = scaleRef.current;
+      const o = offsetRef.current;
       canvas.width = CROP_SIZE;
       canvas.height = CROP_SIZE;
       ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
-      const w = img.width * scale;
-      const h = img.height * scale;
-      const x = (CROP_SIZE - w) / 2 + offset.x;
-      const y = (CROP_SIZE - h) / 2 + offset.y;
+      const w = img.width * s;
+      const h = img.height * s;
+      const x = (CROP_SIZE - w) / 2 + o.x;
+      const y = (CROP_SIZE - h) / 2 + o.y;
       ctx.drawImage(img, x, y, w, h);
-      // Grade de terços
       ctx.strokeStyle = "rgba(255,255,255,0.35)";
       ctx.lineWidth = 0.5;
       ctx.beginPath();
@@ -389,18 +403,19 @@ function ImageCropper({
       ctx.moveTo(0, (CROP_SIZE * 2) / 3);
       ctx.lineTo(CROP_SIZE, (CROP_SIZE * 2) / 3);
       ctx.stroke();
-      // Borda verde
       ctx.strokeStyle = "#6ab820";
       ctx.lineWidth = 2;
       ctx.strokeRect(1, 1, CROP_SIZE - 2, CROP_SIZE - 2);
     });
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+  }
+
+  useEffect(() => {
+    if (imgReady) draw();
   }, [scale, offset, imgReady]);
 
-  // Touch events
+  // Touch events — roda DEPOIS que imgReady=true para garantir que o canvas existe
   useEffect(() => {
+    if (!imgReady) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -430,18 +445,28 @@ function ImageCropper({
         const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
         const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
         if (lastTouchDist.current > 0) {
-          setScale((s) => Math.min(3, Math.max(minScaleRef.current, s * (d / lastTouchDist.current))));
+          const newScale = Math.min(3, Math.max(minScaleRef.current, scaleRef.current * (d / lastTouchDist.current)));
+          scaleRef.current = newScale;
+          setScaleState(newScale);
         }
-        setOffset((o) => ({ x: o.x + cx - lastTouchPos.current.x, y: o.y + cy - lastTouchPos.current.y }));
+        const newOffset = {
+          x: offsetRef.current.x + cx - lastTouchPos.current.x,
+          y: offsetRef.current.y + cy - lastTouchPos.current.y,
+        };
+        offsetRef.current = newOffset;
+        setOffsetState(newOffset);
         lastTouchDist.current = d;
         lastTouchPos.current = { x: cx, y: cy };
       } else if (e.touches.length === 1) {
-        setOffset((o) => ({
-          x: o.x + e.touches[0].clientX - lastTouchPos.current.x,
-          y: o.y + e.touches[0].clientY - lastTouchPos.current.y,
-        }));
+        const newOffset = {
+          x: offsetRef.current.x + e.touches[0].clientX - lastTouchPos.current.x,
+          y: offsetRef.current.y + e.touches[0].clientY - lastTouchPos.current.y,
+        };
+        offsetRef.current = newOffset;
+        setOffsetState(newOffset);
         lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
+      draw();
     }
 
     function onTouchEnd() {
@@ -456,24 +481,22 @@ function ImageCropper({
       canvas.removeEventListener("touchmove", onTouchMove);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, []);
-
-  function clampScale(s: number) {
-    return Math.min(3, Math.max(minScaleRef.current, s));
-  }
+  }, [imgReady]);
 
   function onPointerDown(e: React.PointerEvent) {
     if (e.pointerType === "touch") return;
     setDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+    dragStart.current = { x: e.clientX, y: e.clientY, ox: offsetRef.current.x, oy: offsetRef.current.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }
   function onPointerMove(e: React.PointerEvent) {
     if (!dragging || e.pointerType === "touch") return;
-    setOffset({
+    const newOffset = {
       x: dragStart.current.ox + e.clientX - dragStart.current.x,
       y: dragStart.current.oy + e.clientY - dragStart.current.y,
-    });
+    };
+    offsetRef.current = newOffset;
+    setOffsetState(newOffset);
   }
   function onPointerUp() {
     setDragging(false);
@@ -526,7 +549,7 @@ function ImageCropper({
           <div className="flex items-center gap-3 mb-3">
             <button
               type="button"
-              onClick={() => setScale((s) => clampScale(s - 0.1))}
+              onClick={() => setScale(scaleRef.current - 0.1)}
               className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
             >
               <ZoomOut className="h-4 w-4" />
@@ -537,12 +560,12 @@ function ImageCropper({
               max={3}
               step="0.05"
               value={scale}
-              onChange={(e) => setScale(clampScale(Number(e.target.value)))}
+              onChange={(e) => setScale(Number(e.target.value))}
               className="flex-1"
             />
             <button
               type="button"
-              onClick={() => setScale((s) => clampScale(s + 0.1))}
+              onClick={() => setScale(scaleRef.current + 0.1)}
               className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
             >
               <ZoomIn className="h-4 w-4" />
@@ -655,6 +678,109 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
   );
 }
 
+function PreviewVitrine({ form }: { form: FormState }) {
+  const cor = corCat(form.categoria);
+  const emoji = form.categoria === "Naturais" ? "🌿" : form.categoria === "Frigorífico" ? "🥩" : "💊";
+
+  function PrecoPreview() {
+    if (form.categoria === "Naturais") {
+      const p100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
+      const pkg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
+      if (!p100g && !pkg) return null;
+      return (
+        <div className="mt-2 flex gap-3 items-center">
+          {p100g != null && (
+            <div>
+              <p className="text-xs text-muted-foreground">100g</p>
+              <p className="text-sm font-bold" style={{ color: cor }}>
+                R$ {p100g.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          )}
+          {p100g != null && pkg != null && <div className="w-px h-5 bg-border/60" />}
+          {pkg != null && (
+            <div>
+              <p className="text-xs text-muted-foreground">1kg</p>
+              <p className="text-sm font-bold" style={{ color: cor }}>
+                R$ {pkg.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+    if (form.categoria === "Frigorífico") {
+      const pkg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
+      if (!pkg) return null;
+      return (
+        <div className="mt-2">
+          <p className="text-xs text-muted-foreground">por kg</p>
+          <p className="text-sm font-bold" style={{ color: cor }}>
+            R$ {pkg.toFixed(2).replace(".", ",")}
+          </p>
+        </div>
+      );
+    }
+    if (form.categoria === "Suplementos") {
+      const pun = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
+      return (
+        <div className="mt-2 flex gap-3 items-center">
+          {form.peso_embalagem && (
+            <div>
+              <p className="text-xs text-muted-foreground">Embalagem</p>
+              <p className="text-sm font-bold text-foreground">{form.peso_embalagem}</p>
+            </div>
+          )}
+          {form.peso_embalagem && pun != null && <div className="w-px h-5 bg-border/60" />}
+          {pun != null && (
+            <div>
+              <p className="text-xs text-muted-foreground">Preço</p>
+              <p className="text-sm font-bold" style={{ color: cor }}>
+                R$ {pun.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  }
+
+  return (
+    <div className="mb-4 rounded-2xl border border-border/60 overflow-hidden">
+      <div className="px-3 py-2 bg-muted/30 border-b border-border/40 flex items-center gap-1.5">
+        <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground font-medium">Pré-visualização na vitrine</span>
+      </div>
+      <div className="flex gap-3 p-3 bg-white">
+        <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+          {form.imagem_url ? (
+            <img src={form.imagem_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-2xl opacity-30">{emoji}</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: cor }} />
+            <span className="text-xs text-muted-foreground">{form.categoria}</span>
+          </div>
+          <p className="text-sm font-semibold text-foreground truncate">
+            {form.nome || <span className="text-muted-foreground italic">Nome do produto</span>}
+          </p>
+          {form.descricao && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{form.descricao}</p>}
+          <PrecoPreview />
+        </div>
+        <div className="flex items-center flex-shrink-0 self-center">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 4l4 4-4 4" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FormModal({
   initial,
   onClose,
@@ -692,6 +818,7 @@ function FormModal({
           </button>
         </div>
         {erro && <div className="mb-3 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{erro}</div>}
+
         <label className="block text-sm font-medium mb-1">Nome</label>
         <input
           required
@@ -699,6 +826,7 @@ function FormModal({
           onChange={(e) => setForm({ ...form, nome: e.target.value })}
           className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
         />
+
         <label className="block text-sm font-medium mb-1">Categoria</label>
         <select
           value={form.categoria}
@@ -711,6 +839,7 @@ function FormModal({
             </option>
           ))}
         </select>
+
         {form.categoria === "Naturais" && (
           <>
             <label className="block text-sm font-medium mb-1">Preço 100g (R$)</label>
@@ -762,14 +891,19 @@ function FormModal({
             />
           </>
         )}
+
         <ImageUpload value={form.imagem_url} onChange={(url) => setForm({ ...form, imagem_url: url })} />
+
         <label className="block text-sm font-medium mb-1">Descrição</label>
         <textarea
-          rows={4}
+          rows={3}
           value={form.descricao}
           onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-          className="w-full p-3 mb-3 rounded-lg border border-input bg-background text-base"
+          className="w-full p-3 mb-4 rounded-lg border border-input bg-background text-base"
         />
+
+        <PreviewVitrine form={form} />
+
         <label className="flex items-center gap-2 mb-5 min-h-12">
           <input
             type="checkbox"
@@ -779,6 +913,7 @@ function FormModal({
           />
           <span className="text-sm">Disponível na vitrine</span>
         </label>
+
         <button
           type="submit"
           disabled={salvando}
