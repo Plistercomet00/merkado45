@@ -342,7 +342,8 @@ function ImageCropper({
   const lastTouchDist = useRef(0);
   const lastTouchPos = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
-  const CROP_SIZE = 1080;
+  const CROP_SIZE = 300;
+  const EXPORT_SIZE = 1080;
 
   function setScale(s: number) {
     const clamped = Math.min(3, Math.max(minScaleRef.current, s));
