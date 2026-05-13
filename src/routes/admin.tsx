@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
-function AdminPage() {
+function AdminApp() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   useEffect(() => {
@@ -31,6 +31,10 @@ function AdminPage() {
       </div>
     );
   return userEmail ? <Painel email={userEmail} /> : <Login />;
+}
+
+function AdminPage() {
+  return <AdminApp />;
 }
 
 function Login() {
@@ -218,7 +222,6 @@ function Painel({ email }: { email: string }) {
           </button>
         </div>
       </header>
-
       <main className="mx-auto max-w-3xl px-4 py-4">
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -230,7 +233,6 @@ function Painel({ email }: { email: string }) {
             className="w-full h-11 pl-9 pr-4 text-sm rounded-xl border border-border/60 bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
           />
         </div>
-
         <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
@@ -243,13 +245,11 @@ function Painel({ email }: { email: string }) {
             </button>
           ))}
         </div>
-
         <p className="text-xs text-muted-foreground mb-2">
           {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""}
         </p>
-
         {loading ? (
-          <div className="py-16 flex flex-col items-center gap-3">
+          <div className="py-16 flex justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtrados.length === 0 ? (
@@ -258,7 +258,6 @@ function Painel({ email }: { email: string }) {
           <ul className="flex flex-col divide-y divide-border/40">
             {filtrados.map((p) => (
               <li key={p.id} className="flex items-center gap-3 py-3">
-                {/* Imagem */}
                 <div className="w-14 h-14 flex-shrink-0 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
                   {p.imagem_url ? (
                     <img src={p.imagem_url} alt="" className="w-full h-full object-cover" />
@@ -266,8 +265,6 @@ function Painel({ email }: { email: string }) {
                     <Image className="h-5 w-5 text-muted-foreground" />
                   )}
                 </div>
-
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: corCat(p.categoria) }} />
@@ -277,8 +274,6 @@ function Painel({ email }: { email: string }) {
                   <p className="text-sm font-semibold text-foreground truncate">{p.nome}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{precoLabel(p)}</p>
                 </div>
-
-                {/* Ações */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button
                     onClick={() =>
@@ -313,7 +308,6 @@ function Painel({ email }: { email: string }) {
           </ul>
         )}
       </main>
-
       <button
         onClick={() => setEditando(FORM_VAZIO)}
         className="fixed bottom-6 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
@@ -321,7 +315,6 @@ function Painel({ email }: { email: string }) {
       >
         <Plus className="h-6 w-6" />
       </button>
-
       {editando && <FormModal initial={editando} onClose={() => setEditando(null)} onSave={salvar} />}
     </div>
   );
@@ -338,65 +331,85 @@ function ImageCropper({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const minScaleRef = useRef(1);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [imgReady, setImgReady] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const lastTouchDist = useRef(0);
   const lastTouchPos = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number | null>(null);
   const CROP_SIZE = 300;
 
+  // Carrega imagem e calcula minScale
   useEffect(() => {
+    setImgReady(false);
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
       imgRef.current = img;
-      const minScale = CROP_SIZE / Math.min(img.width, img.height);
-      setScale(minScale);
+      const min = CROP_SIZE / Math.min(img.width, img.height);
+      minScaleRef.current = min;
+      setScale(min);
       setOffset({ x: 0, y: 0 });
+      setImgReady(true);
     };
     img.src = src;
   }, [src]);
 
+  // Desenha canvas — throttled via RAF
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    canvas.width = CROP_SIZE;
-    canvas.height = CROP_SIZE;
-    ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
-    const w = img.width * scale;
-    const h = img.height * scale;
-    const x = (CROP_SIZE - w) / 2 + offset.x;
-    const y = (CROP_SIZE - h) / 2 + offset.y;
-    ctx.drawImage(img, x, y, w, h);
-    ctx.strokeStyle = "#6ab820";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, CROP_SIZE - 2, CROP_SIZE - 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.moveTo(CROP_SIZE / 3, 0);
-    ctx.lineTo(CROP_SIZE / 3, CROP_SIZE);
-    ctx.moveTo((CROP_SIZE * 2) / 3, 0);
-    ctx.lineTo((CROP_SIZE * 2) / 3, CROP_SIZE);
-    ctx.moveTo(0, CROP_SIZE / 3);
-    ctx.lineTo(CROP_SIZE, CROP_SIZE / 3);
-    ctx.moveTo(0, (CROP_SIZE * 2) / 3);
-    ctx.lineTo(CROP_SIZE, (CROP_SIZE * 2) / 3);
-    ctx.stroke();
-  }, [scale, offset]);
+    if (!imgReady) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      const img = imgRef.current;
+      if (!canvas || !img) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      canvas.width = CROP_SIZE;
+      canvas.height = CROP_SIZE;
+      ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      const x = (CROP_SIZE - w) / 2 + offset.x;
+      const y = (CROP_SIZE - h) / 2 + offset.y;
+      ctx.drawImage(img, x, y, w, h);
+      // Grade de terços
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(CROP_SIZE / 3, 0);
+      ctx.lineTo(CROP_SIZE / 3, CROP_SIZE);
+      ctx.moveTo((CROP_SIZE * 2) / 3, 0);
+      ctx.lineTo((CROP_SIZE * 2) / 3, CROP_SIZE);
+      ctx.moveTo(0, CROP_SIZE / 3);
+      ctx.lineTo(CROP_SIZE, CROP_SIZE / 3);
+      ctx.moveTo(0, (CROP_SIZE * 2) / 3);
+      ctx.lineTo(CROP_SIZE, (CROP_SIZE * 2) / 3);
+      ctx.stroke();
+      // Borda verde
+      ctx.strokeStyle = "#6ab820";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, CROP_SIZE - 2, CROP_SIZE - 2);
+    });
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [scale, offset, imgReady]);
 
+  // Touch events
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     function dist(e: TouchEvent) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       return Math.sqrt(dx * dx + dy * dy);
     }
+
     function onTouchStart(e: TouchEvent) {
       e.preventDefault();
       if (e.touches.length === 2) {
@@ -409,13 +422,16 @@ function ImageCropper({
         lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
+
     function onTouchMove(e: TouchEvent) {
       e.preventDefault();
       if (e.touches.length === 2) {
         const d = dist(e);
         const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
         const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        if (lastTouchDist.current > 0) setScale((s) => Math.min(3, Math.max(0.3, s * (d / lastTouchDist.current))));
+        if (lastTouchDist.current > 0) {
+          setScale((s) => Math.min(3, Math.max(minScaleRef.current, s * (d / lastTouchDist.current))));
+        }
         setOffset((o) => ({ x: o.x + cx - lastTouchPos.current.x, y: o.y + cy - lastTouchPos.current.y }));
         lastTouchDist.current = d;
         lastTouchPos.current = { x: cx, y: cy };
@@ -427,9 +443,11 @@ function ImageCropper({
         lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
+
     function onTouchEnd() {
       lastTouchDist.current = 0;
     }
+
     canvas.addEventListener("touchstart", onTouchStart, { passive: false });
     canvas.addEventListener("touchmove", onTouchMove, { passive: false });
     canvas.addEventListener("touchend", onTouchEnd);
@@ -439,6 +457,10 @@ function ImageCropper({
       canvas.removeEventListener("touchend", onTouchEnd);
     };
   }, []);
+
+  function clampScale(s: number) {
+    return Math.min(3, Math.max(minScaleRef.current, s));
+  }
 
   function onPointerDown(e: React.PointerEvent) {
     if (e.pointerType === "touch") return;
@@ -456,6 +478,7 @@ function ImageCropper({
   function onPointerUp() {
     setDragging(false);
   }
+
   function confirm() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -478,42 +501,48 @@ function ImageCropper({
           </button>
         </div>
         <div className="flex items-center justify-center bg-black p-2">
-          <canvas
-            ref={canvasRef}
-            style={{
-              width: CROP_SIZE,
-              height: CROP_SIZE,
-              maxWidth: "100%",
-              cursor: dragging ? "grabbing" : "grab",
-              touchAction: "none",
-            }}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-          />
+          {!imgReady ? (
+            <div style={{ width: CROP_SIZE, height: CROP_SIZE }} className="flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <canvas
+              ref={canvasRef}
+              style={{
+                width: CROP_SIZE,
+                height: CROP_SIZE,
+                maxWidth: "100%",
+                cursor: dragging ? "grabbing" : "grab",
+                touchAction: "none",
+              }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+            />
+          )}
         </div>
         <div className="px-4 py-3 border-t border-border">
           <p className="text-xs text-muted-foreground text-center mb-3">Arraste para mover · Dois dedos para zoom</p>
           <div className="flex items-center gap-3 mb-3">
             <button
               type="button"
-              onClick={() => setScale((s) => Math.max(0.3, s - 0.1))}
+              onClick={() => setScale((s) => clampScale(s - 0.1))}
               className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
             <input
               type="range"
-              min="0.3"
-              max="3"
+              min={minScaleRef.current}
+              max={3}
               step="0.05"
               value={scale}
-              onChange={(e) => setScale(Number(e.target.value))}
+              onChange={(e) => setScale(clampScale(Number(e.target.value)))}
               className="flex-1"
             />
             <button
               type="button"
-              onClick={() => setScale((s) => Math.min(3, s + 0.1))}
+              onClick={() => setScale((s) => clampScale(s + 0.1))}
               className="h-10 w-10 flex items-center justify-center rounded-full border border-border hover:bg-muted"
             >
               <ZoomIn className="h-4 w-4" />
@@ -551,7 +580,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      setErro("Imagem muito grande. Maximo 10MB.");
+      setErro("Imagem muito grande. Máximo 10MB.");
       return;
     }
     setErro(null);
@@ -606,7 +635,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
             <>
               <Upload className="h-6 w-6 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Toque para escolher uma foto</p>
-              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP - max 10MB</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP · máx 10MB</p>
             </>
           )}
         </div>
