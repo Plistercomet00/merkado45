@@ -414,7 +414,6 @@ function ImageCropper({
     if (imgReady) draw();
   }, [scale, offset, imgReady]);
 
-  // Touch events — roda DEPOIS que imgReady=true para garantir que o canvas existe
   useEffect(() => {
     if (!imgReady) return;
     const canvas = canvasRef.current;
@@ -837,6 +836,9 @@ function FormModal({
           value={form.nome}
           onChange={(e) => setForm({ ...form, nome: e.target.value })}
           className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+          autoCorrect="off"
+          autoCapitalize="words"
+          spellCheck={false}
         />
 
         <label className="block text-sm font-medium mb-1">Categoria</label>
@@ -892,6 +894,8 @@ function FormModal({
               value={form.peso_embalagem}
               onChange={(e) => setForm({ ...form, peso_embalagem: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+              autoCorrect="off"
+              spellCheck={false}
             />
             <label className="block text-sm font-medium mb-1">Preço por unidade (R$)</label>
             <input
