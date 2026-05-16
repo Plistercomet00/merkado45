@@ -12,6 +12,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function normalizar(texto: string) {
+  if (!texto) return "";
   return texto
     .toLowerCase()
     .normalize("NFD")
@@ -145,7 +146,7 @@ function Painel({ email }: { email: string }) {
     () =>
       produtos.filter((p) => {
         const okCat = categoria === "Todos" || p.categoria === categoria;
-        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca.trim()));
+        const okBusca = !busca || normalizar(p.nome ?? "").includes(normalizar(busca.trim()));
         return okCat && okBusca;
       }),
     [produtos, categoria, busca],
