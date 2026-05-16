@@ -254,7 +254,7 @@ function Painel({ email }: { email: string }) {
           ))}
         </div>
         <p className="text-xs text-muted-foreground mb-2">
-          {filtrados.length} produto{filtrados.length !== 1 ? "s" : ""}
+          {loading ? "" : `${filtrados.length} produto${filtrados.length !== 1 ? "s" : ""}`}
         </p>
         {loading ? (
           <div className="py-16 flex justify-center">
