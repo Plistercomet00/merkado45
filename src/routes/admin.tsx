@@ -11,6 +11,13 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
+function normalizar(texto: string) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function AdminApp() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -138,7 +145,7 @@ function Painel({ email }: { email: string }) {
     () =>
       produtos.filter((p) => {
         const okCat = categoria === "Todos" || p.categoria === categoria;
-        const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
+        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca.trim()));
         return okCat && okBusca;
       }),
     [produtos, categoria, busca],
