@@ -29,6 +29,13 @@ function bgCat(cat: string) {
   return "#f0f7eb";
 }
 
+function normalizar(texto: string) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function PrecoResumido({ p }: { p: Produto }) {
   const cor = corCat(p.categoria);
   if (p.categoria === "Naturais") {
@@ -110,7 +117,7 @@ function Index() {
     () =>
       produtos.filter((p) => {
         const okCat = categoria === "Todos" || p.categoria === categoria;
-        const okBusca = !busca || p.nome.toLowerCase().includes(busca.toLowerCase());
+        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca));
         return okCat && okBusca;
       }),
     [produtos, categoria, busca],
