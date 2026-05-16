@@ -117,7 +117,7 @@ function Index() {
     () =>
       produtos.filter((p) => {
         const okCat = categoria === "Todos" || p.categoria === categoria;
-        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca));
+        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca.trim()));
         return okCat && okBusca;
       }),
     [produtos, categoria, busca],
