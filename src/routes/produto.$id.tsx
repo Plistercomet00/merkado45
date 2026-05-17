@@ -142,7 +142,7 @@ function ProdutoDetalhe() {
         </div>
       </header>
 
-      <div className="w-full bg-white" style={{ aspectRatio: "4/3", maxHeight: 300, overflow: "hidden" }}>
+      <div className="w-full bg-white relative" style={{ aspectRatio: "4/3", maxHeight: 300, overflow: "hidden" }}>
         {produto.imagem_url ? (
           <img
             src={produto.imagem_url}
@@ -155,6 +155,21 @@ function ProdutoDetalhe() {
             <span className="text-6xl opacity-20">{emoji}</span>
           </div>
         )}
+        <div className="absolute bottom-2 right-2">
+          <span
+            className="text-xs px-2.5 py-1 rounded-full border"
+            style={{
+              background: "rgba(255,255,255,0.82)",
+              backdropFilter: "blur(6px)",
+              color: "#888",
+              borderColor: "rgba(0,0,0,0.08)",
+              fontStyle: "italic",
+              letterSpacing: "0.01em",
+            }}
+          >
+            Imagem meramente ilustrativa
+          </span>
+        </div>
       </div>
 
       <div className="h-0.5 w-full" style={{ background: cor }} />
