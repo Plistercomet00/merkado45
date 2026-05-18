@@ -105,6 +105,7 @@ type FormState = {
   preco_kg: string;
   preco_unidade: string;
   peso_embalagem: string;
+  sabores: string;
 };
 const FORM_VAZIO: FormState = {
   nome: "",
@@ -116,6 +117,7 @@ const FORM_VAZIO: FormState = {
   preco_kg: "",
   preco_unidade: "",
   peso_embalagem: "",
+  sabores: "",
 };
 
 function corCat(cat: string) {
@@ -163,6 +165,7 @@ function Painel({ email }: { email: string }) {
       preco_kg: null,
       preco_unidade: null,
       peso_embalagem: null,
+      sabores: null,
     };
     if (form.categoria === "Naturais") {
       payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
@@ -172,6 +175,7 @@ function Painel({ email }: { email: string }) {
     } else if (form.categoria === "Suplementos") {
       payload.peso_embalagem = form.peso_embalagem || null;
       payload.preco_unidade = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
+      payload.sabores = form.sabores || null;
     }
     if (form.id) {
       const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
@@ -296,6 +300,7 @@ function Painel({ email }: { email: string }) {
                         preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
                         preco_unidade: p.preco_unidade != null ? String(p.preco_unidade) : "",
                         peso_embalagem: p.peso_embalagem ?? "",
+                        sabores: p.sabores ?? "",
                       })
                     }
                     className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
@@ -743,20 +748,39 @@ function PreviewVitrine({ form }: { form: FormState }) {
     if (form.categoria === "Suplementos") {
       const pun = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
       return (
-        <div className="mt-2 flex gap-3 items-center">
-          {form.peso_embalagem && (
-            <div>
-              <p className="text-xs text-muted-foreground">Embalagem</p>
-              <p className="text-sm font-bold text-foreground">{form.peso_embalagem}</p>
-            </div>
-          )}
-          {form.peso_embalagem && pun != null && <div className="w-px h-5 bg-border/60" />}
-          {pun != null && (
-            <div>
-              <p className="text-xs text-muted-foreground">Preço</p>
-              <p className="text-sm font-bold" style={{ color: cor }}>
-                R$ {pun.toFixed(2).replace(".", ",")}
-              </p>
+        <div className="mt-2 flex flex-col gap-2">
+          <div className="flex gap-3 items-center">
+            {form.peso_embalagem && (
+              <div>
+                <p className="text-xs text-muted-foreground">Embalagem</p>
+                <p className="text-sm font-bold text-foreground">{form.peso_embalagem}</p>
+              </div>
+            )}
+            {form.peso_embalagem && pun != null && <div className="w-px h-5 bg-border/60" />}
+            {pun != null && (
+              <div>
+                <p className="text-xs text-muted-foreground">Preço</p>
+                <p className="text-sm font-bold" style={{ color: cor }}>
+                  R$ {pun.toFixed(2).replace(".", ",")}
+                </p>
+              </div>
+            )}
+          </div>
+          {form.sabores && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {form.sabores
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((sabor) => (
+                  <span
+                    key={sabor}
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: "#fdf6e8", color: "#e8a020" }}
+                  >
+                    {sabor}
+                  </span>
+                ))}
             </div>
           )}
         </div>
@@ -913,6 +937,16 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_unidade: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
+            <label className="block text-sm font-medium mb-1">Sabores disponíveis</label>
+            <input
+              placeholder="ex: Chocolate, Baunilha, Morango"
+              value={form.sabores}
+              onChange={(e) => setForm({ ...form, sabores: e.target.value })}
+              className="w-full h-12 px-3 mb-1 rounded-lg border border-input bg-background text-base"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+            <p className="text-xs text-muted-foreground mb-3">Separe os sabores por vírgula</p>
           </>
         )}
 
