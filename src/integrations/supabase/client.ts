@@ -14,6 +14,7 @@ export type Produto = {
   imagem_url: string | null;
   disponivel: boolean;
   created_at: string;
+  sabores: string | null;
 };
 export const CATEGORIAS = ["Naturais", "Frigorífico", "Suplementos"] as const;
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
