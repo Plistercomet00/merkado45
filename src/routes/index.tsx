@@ -9,19 +9,19 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Merkado empório 45 — Produtos Naturais, Suplementos e Frigorífico em Casa Amarela, Recife" },
+      { title: "Empório Merkado 45 — Produtos Naturais, Suplementos e Frigorífico em Casa Amarela, Recife" },
       {
         name: "description",
         content:
-          "O Merkado empório 45 (também conhecido como Mercado 45, Merkado 45 e Empório 45) fica na Rua Taquaritinga, 45, Casa Amarela, Recife/PE. Venda de produtos naturais, ervas, temperos, grãos, chás, suplementos, whey protein, creatina, carnes e frios. Seg–Sáb, 07h às 18h.",
+          "O Empório Merkado 45 (também conhecido como Mercado 45, Merkado 45 e Empório 45) fica na Rua Taquaritinga, 45, Casa Amarela, Recife/PE. Venda de produtos naturais, ervas, temperos, grãos, chás, suplementos, whey protein, creatina, carnes e frios. Seg–Sáb, 07h às 18h.",
       },
       {
         name: "keywords",
         content:
-          "Merkado 45, Mercado 45, Empório 45, Merkado empório 45, empório Casa Amarela, produtos naturais Recife, suplementos Casa Amarela, ervas e temperos Recife, whey protein Casa Amarela, frigorífico Casa Amarela, empório Recife, loja natural Recife",
+          "Empório Merkado 45, Merkado 45, Mercado 45, Empório 45, empório Casa Amarela, produtos naturais Recife, suplementos Casa Amarela, ervas e temperos Recife, whey protein Casa Amarela, frigorífico Casa Amarela, empório Recife, loja natural Recife",
       },
       { name: "robots", content: "index, follow" },
-      { property: "og:title", content: "Merkado empório 45 — Casa Amarela, Recife" },
+      { property: "og:title", content: "Empório Merkado 45 — Casa Amarela, Recife" },
       {
         property: "og:description",
         content:
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
       { property: "og:url", content: "https://merkado45.lovable.app" },
       { property: "og:locale", content: "pt_BR" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Merkado empório 45 — Casa Amarela, Recife" },
+      { name: "twitter:title", content: "Empório Merkado 45 — Casa Amarela, Recife" },
       {
         name: "twitter:description",
         content: "Produtos naturais, suplementos e frigorífico em Casa Amarela, Recife/PE. Seg–Sáb, 07h às 18h.",
@@ -95,19 +95,38 @@ function PrecoResumido({ p }: { p: Produto }) {
   if (p.categoria === "Suplementos") {
     if (p.preco_unidade == null && !p.peso_embalagem) return null;
     return (
-      <div className="flex gap-2 items-center mt-1.5">
-        {p.peso_embalagem && (
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ background: bgCat(p.categoria), color: corCat(p.categoria) }}
-          >
-            {p.peso_embalagem}
-          </span>
-        )}
-        {p.preco_unidade != null && (
-          <span className="text-sm font-semibold" style={{ color: corCat(p.categoria) }}>
-            R$ {p.preco_unidade.toFixed(2).replace(".", ",")}
-          </span>
+      <div className="flex flex-col gap-1.5 mt-1.5">
+        <div className="flex gap-2 items-center">
+          {p.peso_embalagem && (
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: bgCat(p.categoria), color: corCat(p.categoria) }}
+            >
+              {p.peso_embalagem}
+            </span>
+          )}
+          {p.preco_unidade != null && (
+            <span className="text-sm font-semibold" style={{ color: corCat(p.categoria) }}>
+              R$ {p.preco_unidade.toFixed(2).replace(".", ",")}
+            </span>
+          )}
+        </div>
+        {p.sabores && (
+          <div className="flex flex-wrap gap-1">
+            {p.sabores
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .map((sabor) => (
+                <span
+                  key={sabor}
+                  className="text-xs px-2 py-0.5 rounded-full font-medium border"
+                  style={{ background: "#fff", color: "#e8a020", borderColor: "#e8a02040" }}
+                >
+                  {sabor}
+                </span>
+              ))}
+          </div>
         )}
       </div>
     );
