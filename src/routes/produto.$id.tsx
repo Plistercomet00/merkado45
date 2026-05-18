@@ -56,20 +56,42 @@ function PrecosProduto({ p }: { p: Produto }) {
   if (p.categoria === "Suplementos") {
     if (p.preco_unidade == null && !p.peso_embalagem) return null;
     return (
-      <div className="flex gap-6 items-start">
-        {p.peso_embalagem && (
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-6 items-start">
+          {p.peso_embalagem && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Embalagem</p>
+              <p className="text-2xl font-bold text-foreground">{p.peso_embalagem}</p>
+            </div>
+          )}
+          {p.peso_embalagem && p.preco_unidade != null && <div className="w-px self-stretch bg-border/60 mt-1" />}
+          {p.preco_unidade != null && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Preço</p>
+              <p className="text-2xl font-bold" style={{ color: cor }}>
+                R$ {p.preco_unidade.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          )}
+        </div>
+        {p.sabores && (
           <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Embalagem</p>
-            <p className="text-2xl font-bold text-foreground">{p.peso_embalagem}</p>
-          </div>
-        )}
-        {p.peso_embalagem && p.preco_unidade != null && <div className="w-px self-stretch bg-border/60 mt-1" />}
-        {p.preco_unidade != null && (
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Preço</p>
-            <p className="text-2xl font-bold" style={{ color: cor }}>
-              R$ {p.preco_unidade.toFixed(2).replace(".", ",")}
-            </p>
+            <p className="text-xs text-muted-foreground mb-2">Sabores disponíveis</p>
+            <div className="flex flex-wrap gap-2">
+              {p.sabores
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((sabor) => (
+                  <span
+                    key={sabor}
+                    className="text-sm px-3 py-1 rounded-full font-medium border"
+                    style={{ background: "#fdf6e8", color: "#e8a020", borderColor: "#e8a02050" }}
+                  >
+                    {sabor}
+                  </span>
+                ))}
+            </div>
           </div>
         )}
       </div>
