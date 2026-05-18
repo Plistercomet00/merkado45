@@ -9,8 +9,33 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Merkado empório 45 — Vitrine" },
-      { name: "description", content: "Veja os produtos do Merkado empório 45 e peça pelo WhatsApp." },
+      { title: "Merkado empório 45 — Produtos Naturais, Suplementos e Frigorífico em Casa Amarela, Recife" },
+      {
+        name: "description",
+        content:
+          "O Merkado empório 45 (também conhecido como Mercado 45, Merkado 45 e Empório 45) fica na Rua Taquaritinga, 45, Casa Amarela, Recife/PE. Venda de produtos naturais, ervas, temperos, grãos, chás, suplementos, whey protein, creatina, carnes e frios. Seg–Sáb, 07h às 18h.",
+      },
+      {
+        name: "keywords",
+        content:
+          "Merkado 45, Mercado 45, Empório 45, Merkado empório 45, empório Casa Amarela, produtos naturais Recife, suplementos Casa Amarela, ervas e temperos Recife, whey protein Casa Amarela, frigorífico Casa Amarela, empório Recife, loja natural Recife",
+      },
+      { name: "robots", content: "index, follow" },
+      { property: "og:title", content: "Merkado empório 45 — Casa Amarela, Recife" },
+      {
+        property: "og:description",
+        content:
+          "Produtos naturais, suplementos e frigorífico em Casa Amarela, Recife. Peça pelo WhatsApp ou visite a loja na Rua Taquaritinga, 45.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://merkado45.lovable.app" },
+      { property: "og:locale", content: "pt_BR" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Merkado empório 45 — Casa Amarela, Recife" },
+      {
+        name: "twitter:description",
+        content: "Produtos naturais, suplementos e frigorífico em Casa Amarela, Recife/PE. Seg–Sáb, 07h às 18h.",
+      },
     ],
   }),
 });
