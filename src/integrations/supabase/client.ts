@@ -10,6 +10,7 @@ export type Produto = {
   preco_kg: number | null;
   preco_unidade: number | null;
   peso_embalagem: string | null;
+  unidade_embalagem: string | null;
   categoria: string;
   imagem_url: string | null;
   disponivel: boolean;
