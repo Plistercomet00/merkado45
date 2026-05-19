@@ -105,6 +105,7 @@ type FormState = {
   preco_kg: string;
   preco_unidade: string;
   peso_embalagem: string;
+  unidade_embalagem: string;
   sabores: string;
 };
 const FORM_VAZIO: FormState = {
@@ -117,6 +118,7 @@ const FORM_VAZIO: FormState = {
   preco_kg: "",
   preco_unidade: "",
   peso_embalagem: "",
+  unidade_embalagem: "",
   sabores: "",
 };
 
@@ -165,11 +167,14 @@ function Painel({ email }: { email: string }) {
       preco_kg: null,
       preco_unidade: null,
       peso_embalagem: null,
+      unidade_embalagem: null,
       sabores: null,
     };
     if (form.categoria === "Naturais") {
       payload.preco_100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
+      payload.preco_unidade = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
+      payload.unidade_embalagem = form.unidade_embalagem || null;
     } else if (form.categoria === "Frigorífico") {
       payload.preco_kg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
     } else if (form.categoria === "Suplementos") {
@@ -205,6 +210,12 @@ function Painel({ email }: { email: string }) {
       const parts = [];
       if (p.preco_100g != null) parts.push(`100g R$ ${Number(p.preco_100g).toFixed(2).replace(".", ",")}`);
       if (p.preco_kg != null) parts.push(`1kg R$ ${Number(p.preco_kg).toFixed(2).replace(".", ",")}`);
+      if (p.preco_unidade != null) {
+        const label = p.unidade_embalagem
+          ? `${p.unidade_embalagem} R$ ${Number(p.preco_unidade).toFixed(2).replace(".", ",")}`
+          : `Un. R$ ${Number(p.preco_unidade).toFixed(2).replace(".", ",")}`;
+        parts.push(label);
+      }
       return parts.join(" · ");
     }
     if (p.categoria === "Frigorífico")
@@ -300,6 +311,7 @@ function Painel({ email }: { email: string }) {
                         preco_kg: p.preco_kg != null ? String(p.preco_kg) : "",
                         preco_unidade: p.preco_unidade != null ? String(p.preco_unidade) : "",
                         peso_embalagem: p.peso_embalagem ?? "",
+                        unidade_embalagem: p.unidade_embalagem ?? "",
                         sabores: p.sabores ?? "",
                       })
                     }
@@ -431,13 +443,11 @@ function ImageCropper({
     if (!imgReady) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     function dist(e: TouchEvent) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       return Math.sqrt(dx * dx + dy * dy);
     }
-
     function onTouchStart(e: TouchEvent) {
       e.preventDefault();
       if (e.touches.length === 2) {
@@ -450,7 +460,6 @@ function ImageCropper({
         lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     }
-
     function onTouchMove(e: TouchEvent) {
       e.preventDefault();
       if (e.touches.length === 2) {
@@ -481,11 +490,9 @@ function ImageCropper({
       }
       draw();
     }
-
     function onTouchEnd() {
       lastTouchDist.current = 0;
     }
-
     canvas.addEventListener("touchstart", onTouchStart, { passive: false });
     canvas.addEventListener("touchmove", onTouchMove, { passive: false });
     canvas.addEventListener("touchend", onTouchEnd);
@@ -710,9 +717,10 @@ function PreviewVitrine({ form }: { form: FormState }) {
     if (form.categoria === "Naturais") {
       const p100g = form.preco_100g ? Number(form.preco_100g.replace(",", ".")) : null;
       const pkg = form.preco_kg ? Number(form.preco_kg.replace(",", ".")) : null;
-      if (!p100g && !pkg) return null;
+      const pun = form.preco_unidade ? Number(form.preco_unidade.replace(",", ".")) : null;
+      if (!p100g && !pkg && !pun) return null;
       return (
-        <div className="mt-2 flex gap-3 items-center">
+        <div className="mt-2 flex flex-wrap gap-3 items-center">
           {p100g != null && (
             <div>
               <p className="text-xs text-muted-foreground">100g</p>
@@ -727,6 +735,15 @@ function PreviewVitrine({ form }: { form: FormState }) {
               <p className="text-xs text-muted-foreground">1kg</p>
               <p className="text-sm font-bold" style={{ color: cor }}>
                 R$ {pkg.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          )}
+          {pun != null && (p100g != null || pkg != null) && <div className="w-px h-5 bg-border/60" />}
+          {pun != null && (
+            <div>
+              <p className="text-xs text-muted-foreground">{form.unidade_embalagem || "Unidade"}</p>
+              <p className="text-sm font-bold" style={{ color: cor }}>
+                R$ {pun.toFixed(2).replace(".", ",")}
               </p>
             </div>
           )}
@@ -896,6 +913,7 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_100g: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
+
             <label className="block text-sm font-medium mb-1">Preço 1kg (R$)</label>
             <input
               inputMode="decimal"
@@ -904,8 +922,31 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_kg: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
+
+            <label className="block text-sm font-medium mb-1">Preço por unidade / embalagem (R$)</label>
+            <input
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.preco_unidade}
+              onChange={(e) => setForm({ ...form, preco_unidade: e.target.value })}
+              className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
+            />
+
+            <label className="block text-sm font-medium mb-1">Descrição da embalagem</label>
+            <input
+              placeholder="ex: 250g, 500ml, 30 cápsulas"
+              value={form.unidade_embalagem}
+              onChange={(e) => setForm({ ...form, unidade_embalagem: e.target.value })}
+              className="w-full h-12 px-3 mb-1 rounded-lg border border-input bg-background text-base"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+            <p className="text-xs text-muted-foreground mb-3">
+              Preencha apenas se o produto tiver embalagem fechada com preço fixo
+            </p>
           </>
         )}
+
         {form.categoria === "Frigorífico" && (
           <>
             <label className="block text-sm font-medium mb-1">Preço por kg (R$)</label>
@@ -918,6 +959,7 @@ function FormModal({
             />
           </>
         )}
+
         {form.categoria === "Suplementos" && (
           <>
             <label className="block text-sm font-medium mb-1">Peso da embalagem</label>
@@ -929,6 +971,7 @@ function FormModal({
               autoCorrect="off"
               spellCheck={false}
             />
+
             <label className="block text-sm font-medium mb-1">Preço por unidade (R$)</label>
             <input
               inputMode="decimal"
@@ -937,6 +980,7 @@ function FormModal({
               onChange={(e) => setForm({ ...form, preco_unidade: e.target.value })}
               className="w-full h-12 px-3 mb-3 rounded-lg border border-input bg-background text-base"
             />
+
             <label className="block text-sm font-medium mb-1">Sabores disponíveis</label>
             <input
               placeholder="ex: Chocolate, Baunilha, Morango"
