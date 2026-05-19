@@ -64,9 +64,11 @@ function normalizar(texto: string) {
 function PrecoResumido({ p }: { p: Produto }) {
   const cor = corCat(p.categoria);
   if (p.categoria === "Naturais") {
-    if (p.preco_100g == null && p.preco_kg == null) return null;
+    const temGranel = p.preco_100g != null || p.preco_kg != null;
+    const temUnidade = p.preco_unidade != null;
+    if (!temGranel && !temUnidade) return null;
     return (
-      <div className="flex gap-3 items-center mt-1.5">
+      <div className="flex flex-wrap gap-2 items-center mt-1.5">
         {p.preco_100g != null && (
           <span className="text-sm font-semibold" style={{ color: cor }}>
             R$ {p.preco_100g.toFixed(2).replace(".", ",")}{" "}
@@ -78,6 +80,15 @@ function PrecoResumido({ p }: { p: Produto }) {
           <span className="text-sm font-semibold" style={{ color: cor }}>
             R$ {p.preco_kg.toFixed(2).replace(".", ",")}{" "}
             <span className="text-xs font-normal text-muted-foreground">/kg</span>
+          </span>
+        )}
+        {temUnidade && temGranel && <span className="text-border">·</span>}
+        {temUnidade && (
+          <span
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{ background: bgCat(p.categoria), color: corCat(p.categoria) }}
+          >
+            {p.unidade_embalagem || "Un."} — R$ {p.preco_unidade!.toFixed(2).replace(".", ",")}
           </span>
         )}
       </div>
@@ -175,7 +186,6 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-[#f8f8f6] text-foreground">
-      {/* HEADER */}
       <header
         className="sticky top-0 z-40 bg-white border-b border-border/50"
         style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}
@@ -191,13 +201,11 @@ function Index() {
             className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-white text-sm font-semibold active:scale-95 transition-transform"
             style={{ background: "#25d366", boxShadow: "0 2px 8px rgba(37,211,102,0.35)" }}
           >
-            <FaWhatsapp className="h-4 w-4" />
-            WhatsApp
+            <FaWhatsapp className="h-4 w-4" /> WhatsApp
           </a>
         </div>
       </header>
 
-      {/* HERO BANNER */}
       <div className="bg-white px-4 pt-5 pb-4 mx-auto max-w-3xl">
         <div
           className="rounded-2xl overflow-hidden relative"
@@ -216,7 +224,6 @@ function Index() {
         </div>
       </div>
 
-      {/* CATEGORIAS */}
       <div className="bg-white px-4 pb-4 mx-auto max-w-3xl">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Explorar por categoria
@@ -247,9 +254,7 @@ function Index() {
         </div>
       </div>
 
-      {/* VITRINE */}
       <div id="vitrine" className="mx-auto max-w-3xl px-4 pt-4 pb-16 scroll-mt-14">
-        {/* Busca */}
         <div className="relative mb-3">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -262,7 +267,6 @@ function Index() {
           />
         </div>
 
-        {/* Filtros */}
         <div className="flex flex-nowrap overflow-x-auto gap-2 mb-4 pb-1 -mx-4 px-4">
           {(["Todos", ...CATEGORIAS] as const).map((c) => (
             <button
@@ -276,7 +280,6 @@ function Index() {
           ))}
         </div>
 
-        {/* Lista */}
         {loading ? (
           <div className="py-16 flex flex-col items-center gap-3">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -335,7 +338,6 @@ function Index() {
         )}
       </div>
 
-      {/* RODAPÉ */}
       <footer className="bg-white border-t border-border/50">
         <div className="mx-auto max-w-3xl px-4 py-8 flex flex-col gap-4">
           <Logo size="sm" />
