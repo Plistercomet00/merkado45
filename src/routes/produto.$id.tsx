@@ -16,12 +16,21 @@ function corCat(cat: string) {
   return "#6ab820";
 }
 
+function bgCat(cat: string) {
+  if (cat === "Naturais") return "#f0f7eb";
+  if (cat === "Frigorífico") return "#fdf0f0";
+  if (cat === "Suplementos") return "#fdf6e8";
+  return "#f0f7eb";
+}
+
 function PrecosProduto({ p }: { p: Produto }) {
   const cor = corCat(p.categoria);
   if (p.categoria === "Naturais") {
-    if (p.preco_100g == null && p.preco_kg == null) return null;
+    const temGranel = p.preco_100g != null || p.preco_kg != null;
+    const temUnidade = p.preco_unidade != null;
+    if (!temGranel && !temUnidade) return null;
     return (
-      <div className="flex gap-6 items-start">
+      <div className="flex flex-wrap gap-6 items-start">
         {p.preco_100g != null && (
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">100 gramas</p>
@@ -36,6 +45,15 @@ function PrecosProduto({ p }: { p: Produto }) {
             <p className="text-xs text-muted-foreground mb-0.5">1 quilograma</p>
             <p className="text-2xl font-bold" style={{ color: cor }}>
               R$ {p.preco_kg.toFixed(2).replace(".", ",")}
+            </p>
+          </div>
+        )}
+        {temUnidade && temGranel && <div className="w-px self-stretch bg-border/60 mt-1" />}
+        {temUnidade && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">{p.unidade_embalagem || "Unidade"}</p>
+            <p className="text-2xl font-bold" style={{ color: cor }}>
+              R$ {p.preco_unidade!.toFixed(2).replace(".", ",")}
             </p>
           </div>
         )}
@@ -232,15 +250,13 @@ function ProdutoDetalhe() {
             className="inline-flex items-center justify-center gap-2 h-12 w-full rounded-xl text-sm font-semibold text-white active:scale-[0.98] transition-transform"
             style={{ background: "#25d366" }}
           >
-            <FaWhatsapp className="h-5 w-5" />
-            Fale Conosco pelo WhatsApp
+            <FaWhatsapp className="h-5 w-5" /> Fale Conosco pelo WhatsApp
           </a>
           <button
             onClick={() => navigate({ to: "/" })}
             className="inline-flex items-center justify-center gap-1.5 h-10 w-full rounded-xl text-xs font-medium text-muted-foreground active:scale-[0.98] transition-transform border border-border/60"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Voltar ao catálogo
+            <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao catálogo
           </button>
         </div>
       </div>
