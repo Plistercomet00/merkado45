@@ -61,6 +61,12 @@ function normalizar(texto: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+const ORDEM_CATEGORIAS: Record<string, number> = {
+  Suplementos: 0,
+  Naturais: 1,
+  Frigorífico: 2,
+};
+
 function PrecoResumido({ p }: { p: Produto }) {
   const cor = corCat(p.categoria);
   if (p.categoria === "Naturais") {
@@ -168,15 +174,22 @@ function Index() {
     };
   }, []);
 
-  const filtrados = useMemo(
-    () =>
-      produtos.filter((p) => {
-        const okCat = categoria === "Todos" || p.categoria === categoria;
-        const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca.trim()));
-        return okCat && okBusca;
-      }),
-    [produtos, categoria, busca],
-  );
+  const filtrados = useMemo(() => {
+    const resultado = produtos.filter((p) => {
+      const okCat = categoria === "Todos" || p.categoria === categoria;
+      const okBusca = !busca || normalizar(p.nome).includes(normalizar(busca.trim()));
+      return okCat && okBusca;
+    });
+
+    return resultado.sort((a, b) => {
+      const catA = ORDEM_CATEGORIAS[a.categoria] ?? 99;
+      const catB = ORDEM_CATEGORIAS[b.categoria] ?? 99;
+      if (catA !== catB) return catA - catB;
+      const imgA = a.imagem_url ? 0 : 1;
+      const imgB = b.imagem_url ? 0 : 1;
+      return imgA - imgB;
+    });
+  }, [produtos, categoria, busca]);
 
   const cats = [
     { nome: "Naturais", emoji: "🌿", desc: "Ervas e temperos" },
