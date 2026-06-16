@@ -153,6 +153,10 @@
 a[href*="lovable.dev"],
 div[class*="lovable"],
 [data-lovable],
-iframe[src*="lovable"] {
+iframe[src*="lovable"],
+button[aria-label*="lovable"],
+button[aria-label*="Lovable"],
+.lovable-badge,
+#lovable-badge {
   display: none !important;
 }
