@@ -149,3 +149,10 @@
     color: var(--color-foreground);
   }
 }
+
+a[href*="lovable.dev"],
+div[class*="lovable"],
+[data-lovable],
+iframe[src*="lovable"] {
+  display: none !important;
+}
