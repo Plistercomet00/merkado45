@@ -25,7 +25,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: typeof window !== "undefined" ? window.localStorage : undefined,
   },
 });
-export const WHATSAPP_NUMBER = "5581984881580";
+export const WHATSAPP_NUMBER = "5581992472013";
 export function whatsappLinkForProduct(nome: string) {
   const msg = `Olá! Estou vindo do site e gostaria de saber mais informações sobre: ${nome}`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
